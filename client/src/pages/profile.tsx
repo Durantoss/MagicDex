@@ -39,6 +39,12 @@ export default function Profile() {
   // Search for cards to add to wishlist
   const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ["/api/cards/search", searchQuery],
+    queryFn: async () => {
+      if (!searchQuery || searchQuery.length <= 2) return null;
+      const response = await fetch(`/api/cards/search?q=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Search failed');
+      return response.json();
+    },
     enabled: searchQuery.length > 2,
   }) as { data: any, isLoading: boolean };
 
