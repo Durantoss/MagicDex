@@ -92,7 +92,7 @@ export default function Home() {
             <div className="flex-1 max-w-3xl mx-12">
               <div className="relative">
                 <SearchBar onSearch={handleSearch} />
-                <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-20 blur-sm animate-pulse"></div>
+                <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-20 blur-sm animate-pulse pointer-events-none"></div>
               </div>
             </div>
 
