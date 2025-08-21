@@ -341,7 +341,15 @@ export default function Home() {
                 </p>
                 
                 <p className="text-xs text-slate-500 pt-2 border-t border-slate-700/30">
-                  If you are a rights holder and have concerns about content displayed here, please contact us for immediate resolution.
+                  If you are a rights holder and have concerns about content displayed here, please{' '}
+                  <a 
+                    href="mailto:emwilkerson@gmail.com" 
+                    className="text-mtg-accent hover:text-gradient-primary underline transition-colors duration-300"
+                    data-testid="link-contact"
+                  >
+                    contact me
+                  </a>
+                  {' '}for immediate resolution.
                 </p>
               </div>
             </div>
