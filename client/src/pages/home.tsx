@@ -6,7 +6,6 @@ import CardGrid from "@/components/card-grid";
 import CardDetailModal from "@/components/card-detail-modal";
 import CollectionModal from "@/components/collection-modal";
 import DeckBuilderModal from "@/components/deck-builder-modal";
-import { searchCards } from "@/lib/scryfall-api";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
 import { Bookmark, User, Wand2, Book } from "lucide-react";
@@ -25,7 +24,28 @@ export default function Home() {
 
   const { data: searchResults, isLoading, error } = useQuery({
     queryKey: ["/api/cards/search", filters, currentPage],
-    queryFn: () => searchCards(filters, currentPage),
+    queryFn: async () => {
+      if (!filters.query) return null;
+      
+      // Construct query parameters
+      const params = new URLSearchParams({
+        q: filters.query,
+        page: currentPage.toString(),
+      });
+      
+      // Add filters to query
+      if (filters.sort) params.append('sort', filters.sort);
+      if (filters.minCmc) params.append('minCmc', filters.minCmc.toString());
+      if (filters.maxCmc) params.append('maxCmc', filters.maxCmc.toString());
+      if (filters.colors?.length) params.append('colors', filters.colors.join(','));
+      if (filters.type && filters.type !== 'All Types') params.append('type', filters.type);
+      if (filters.set && filters.set !== 'All Sets') params.append('set', filters.set);
+      if (filters.rarity?.length) params.append('rarity', filters.rarity.join(','));
+      
+      const response = await fetch(`/api/cards/search?${params.toString()}`);
+      if (!response.ok) throw new Error('Search failed');
+      return response.json();
+    },
     enabled: filters.query.length > 0,
   });
 
@@ -176,11 +196,12 @@ export default function Home() {
                   Search for Magic: The Gathering Cards
                 </h3>
                 <p className="text-slate-400" data-testid="text-search-instructions">
-                  Use the search bar above to find cards by name, text, or type
+                  Use the search bar above or apply filters and click Search to find cards
                 </p>
               </div>
             </div>
           )}
+          
 
           {searchResults && searchResults.data.length > 0 && (
             <CardGrid
