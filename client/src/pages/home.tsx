@@ -105,14 +105,16 @@ export default function Home() {
                 Collection
                 <div className="absolute inset-0 bg-mtg-accent rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
               </Button>
-              <Button 
-                className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass"
-                data-testid="button-profile"
-              >
-                <User className="mr-2 h-4 w-4" />
-                Profile
-                <div className="absolute inset-0 bg-mtg-secondary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
-              </Button>
+              <Link href="/profile">
+                <Button 
+                  className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass"
+                  data-testid="button-profile"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                  <div className="absolute inset-0 bg-mtg-secondary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
