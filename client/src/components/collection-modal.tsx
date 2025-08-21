@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCardImageUrl } from "@/lib/scryfall-api";
-import { Download, Share2, Printer, X } from "lucide-react";
+import { Download, Share2, Printer, X, Search, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CollectionModalProps {
@@ -12,16 +14,25 @@ interface CollectionModalProps {
 
 export default function CollectionModal({ onClose }: CollectionModalProps) {
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: collection = [], isLoading } = useQuery({
     queryKey: ["/api/collection"],
   });
 
-  // Calculate collection stats
+  // Filter collection based on search
   const collectionArray = Array.isArray(collection) ? collection : [];
-  const totalCards = collectionArray.reduce((sum: number, item: any) => sum + item.quantity, 0);
-  const uniqueCards = collectionArray.length;
-  const totalValue = collectionArray.reduce((sum: number, item: any) => {
+  const filteredCollection = searchQuery.length > 0 
+    ? collectionArray.filter((item: any) => 
+        item.cardData?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.cardData?.type_line?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : collectionArray;
+
+  // Calculate collection stats
+  const totalCards = filteredCollection.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const uniqueCards = filteredCollection.length;
+  const totalValue = filteredCollection.reduce((sum: number, item: any) => {
     const price = item.cardData?.prices?.usd ? parseFloat(item.cardData.prices.usd) : 0;
     return sum + (price * item.quantity);
   }, 0);
@@ -80,6 +91,19 @@ export default function CollectionModal({ onClose }: CollectionModalProps) {
             </div>
           </DialogHeader>
 
+          {/* Collection Search */}
+          <div className="relative mb-6">
+            <Input
+              type="text"
+              placeholder="Search your collection..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-glass border-glass text-white placeholder-slate-400 pr-10"
+              data-testid="input-collection-search"
+            />
+            <Search className="absolute right-3 top-3 h-4 w-4 text-slate-400" />
+          </div>
+
           {/* Collection Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card className="bg-mtg-gray border-slate-600">
@@ -117,7 +141,7 @@ export default function CollectionModal({ onClose }: CollectionModalProps) {
           </div>
 
           {/* Collection Grid */}
-          {collectionArray.length === 0 ? (
+          {filteredCollection.length === 0 && searchQuery.length === 0 ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="text-6xl mb-4">📚</div>
@@ -129,9 +153,21 @@ export default function CollectionModal({ onClose }: CollectionModalProps) {
                 </p>
               </div>
             </div>
+          ) : searchQuery.length > 0 && filteredCollection.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  No cards found
+                </h3>
+                <p className="text-slate-400">
+                  Try adjusting your search terms
+                </p>
+              </div>
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {collectionArray.map((item: any) => (
+              {filteredCollection.map((item: any) => (
                 <Card
                   key={item.id}
                   className="bg-mtg-gray border-slate-600 hover:bg-slate-600 transition-colors cursor-pointer"

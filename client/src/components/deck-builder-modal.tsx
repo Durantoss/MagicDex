@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Wand2, X, Copy, Download, Lightbulb, Target, BarChart3 } from "lucide-react";
+import { getCardImageUrl } from "@/lib/scryfall-api";
+import { Wand2, X, Copy, Download, Lightbulb, Target, BarChart3, Search, Plus } from "lucide-react";
 
 interface DeckBuilderModalProps {
   onClose: () => void;
@@ -38,10 +39,24 @@ export default function DeckBuilderModal({ onClose }: DeckBuilderModalProps) {
   const [deckType, setDeckType] = useState("Standard");
   const [strategy, setStrategy] = useState("");
   const [deckSuggestion, setDeckSuggestion] = useState<DeckSuggestion | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [manualDeck, setManualDeck] = useState<Array<{name: string, quantity: number}>>([]);
 
   // Get user collection
   const { data: collection = [], isLoading: collectionLoading } = useQuery({
     queryKey: ["/api/collection"],
+  });
+
+  // Search for cards to add to deck
+  const { data: searchResults, isLoading: searchLoading } = useQuery({
+    queryKey: ["/api/cards/search", searchQuery],
+    queryFn: async () => {
+      if (!searchQuery || searchQuery.length <= 2) return null;
+      const response = await fetch(`/api/cards/search?q=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Search failed');
+      return response.json();
+    },
+    enabled: searchQuery.length > 2,
   });
 
   // AI deck builder mutation
@@ -214,6 +229,102 @@ export default function DeckBuilderModal({ onClose }: DeckBuilderModalProps) {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Manual Deck Building */}
+              <Separator />
+              
+              <Card className="bg-mtg-gray border-slate-600">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Search className="mr-2 h-5 w-5 text-blue-400" />
+                    Manual Deck Building
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Card Search */}
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Search for cards to add to deck..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-mtg-secondary border-slate-600 text-white placeholder-slate-400 pr-10"
+                      data-testid="input-deck-card-search"
+                    />
+                    <Search className="absolute right-3 top-3 h-4 w-4 text-slate-400" />
+                  </div>
+
+                  {/* Search Results */}
+                  {searchQuery.length > 2 && (
+                    <div className="max-h-60 overflow-y-auto">
+                      {searchLoading ? (
+                        <div className="text-center py-4 text-slate-400">Searching...</div>
+                      ) : searchResults?.data?.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {searchResults.data.slice(0, 8).map((card: any) => (
+                            <div
+                              key={card.id}
+                              className="flex items-center space-x-3 p-2 bg-mtg-secondary rounded border hover:border-mtg-primary transition-colors cursor-pointer"
+                              onClick={() => {
+                                const existing = manualDeck.find(c => c.name === card.name);
+                                if (existing) {
+                                  setManualDeck(prev => prev.map(c => 
+                                    c.name === card.name ? {...c, quantity: c.quantity + 1} : c
+                                  ));
+                                } else {
+                                  setManualDeck(prev => [...prev, {name: card.name, quantity: 1}]);
+                                }
+                                toast({
+                                  title: "Card Added",
+                                  description: `Added ${card.name} to deck`,
+                                });
+                              }}
+                              data-testid={`card-search-result-${card.id}`}
+                            >
+                              <img
+                                src={getCardImageUrl(card, "small")}
+                                alt={card.name}
+                                className="w-12 h-16 object-cover rounded"
+                              />
+                              <div className="flex-1">
+                                <h4 className="text-white text-sm font-medium">{card.name}</h4>
+                                <p className="text-xs text-slate-400">{card.mana_cost} • {card.type_line}</p>
+                              </div>
+                              <Plus className="h-4 w-4 text-mtg-primary" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : searchQuery.length > 2 ? (
+                        <div className="text-center py-4 text-slate-400">No cards found</div>
+                      ) : null}
+                    </div>
+                  )}
+
+                  {/* Current Manual Deck */}
+                  {manualDeck.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-white font-medium mb-2">Current Deck ({manualDeck.reduce((sum, card) => sum + card.quantity, 0)} cards)</h4>
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {manualDeck.map((card, index) => (
+                          <div key={index} className="flex items-center justify-between text-sm">
+                            <span className="text-white">{card.quantity}x {card.name}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setManualDeck(prev => prev.filter((_, i) => i !== index));
+                              }}
+                              className="text-red-400 hover:text-red-300 h-6 px-2"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Build Button */}
               <div className="flex justify-center pt-4">
