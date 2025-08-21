@@ -9,7 +9,7 @@ import DeckBuilderModal from "@/components/deck-builder-modal";
 import { searchCards } from "@/lib/scryfall-api";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
-import { Bookmark, User, Wand2, Book, Users } from "lucide-react";
+import { Bookmark, User, Wand2, Book } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
@@ -85,16 +85,6 @@ export default function Home() {
                   <Book className="mr-2 h-4 w-4" />
                   Rules
                   <div className="absolute inset-0 bg-gradient-gold rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
-                </Button>
-              </Link>
-              <Link href="/trading">
-                <Button 
-                  className="relative bg-gradient-to-r from-emerald-500 to-teal-600 hover:shadow-glow text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
-                  data-testid="button-trading"
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  Trading
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
               </Link>
               <Button 
