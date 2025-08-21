@@ -48,7 +48,11 @@ export class MemStorage implements IStorage {
 
   async addToCollection(collection: InsertCollection): Promise<Collection> {
     const id = randomUUID();
-    const newCollection: Collection = { ...collection, id };
+    const newCollection: Collection = { 
+      ...collection, 
+      id,
+      quantity: collection.quantity || 1
+    };
     this.collections.set(id, newCollection);
     return newCollection;
   }

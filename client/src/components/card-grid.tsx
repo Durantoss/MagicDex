@@ -80,7 +80,7 @@ export default function CardGrid({
   });
 
   const isInCollection = (cardId: string) => {
-    return collection.some((item: any) => item.cardId === cardId);
+    return Array.isArray(collection) && collection.some((item: any) => item.cardId === cardId);
   };
 
   const handleCollectionToggle = (e: React.MouseEvent, card: ScryfallCard) => {

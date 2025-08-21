@@ -18,9 +18,10 @@ export default function CollectionModal({ onClose }: CollectionModalProps) {
   });
 
   // Calculate collection stats
-  const totalCards = collection.reduce((sum: number, item: any) => sum + item.quantity, 0);
-  const uniqueCards = collection.length;
-  const totalValue = collection.reduce((sum: number, item: any) => {
+  const collectionArray = Array.isArray(collection) ? collection : [];
+  const totalCards = collectionArray.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const uniqueCards = collectionArray.length;
+  const totalValue = collectionArray.reduce((sum: number, item: any) => {
     const price = item.cardData?.prices?.usd ? parseFloat(item.cardData.prices.usd) : 0;
     return sum + (price * item.quantity);
   }, 0);
@@ -116,7 +117,7 @@ export default function CollectionModal({ onClose }: CollectionModalProps) {
           </div>
 
           {/* Collection Grid */}
-          {collection.length === 0 ? (
+          {collectionArray.length === 0 ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="text-6xl mb-4">📚</div>
@@ -130,7 +131,7 @@ export default function CollectionModal({ onClose }: CollectionModalProps) {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {collection.map((item: any) => (
+              {collectionArray.map((item: any) => (
                 <Card
                   key={item.id}
                   className="bg-mtg-gray border-slate-600 hover:bg-slate-600 transition-colors cursor-pointer"

@@ -1,5 +1,5 @@
 import { ScryfallCard } from "@/types/scryfall";
-import { getCardImageUrl, formatManaCost, getRarityColor } from "@/lib/scryfall-api";
+import { getCardImageUrl, formatManaCost, getRarityColor, getManaTypeColors, getColorSymbols, getPriceRange } from "@/lib/scryfall-api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +48,7 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     },
   });
 
-  const isInCollection = collection.some((item: any) => item.cardId === card.id);
+  const isInCollection = Array.isArray(collection) && collection.some((item: any) => item.cardId === card.id);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -83,42 +83,132 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
               </div>
             </DialogHeader>
 
-            <div className="space-y-4">
-              {/* Mana Cost */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Mana Cost</label>
-                <Badge className={`text-lg px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-mana-cost">
-                  {formatManaCost(card.mana_cost) || card.cmc}
-                </Badge>
+            <div className="space-y-6">
+              {/* Core Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Mana Cost */}
+                <div className="bg-mtg-gray p-4 rounded-lg">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Mana Cost</label>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={`text-lg px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-mana-cost">
+                      {formatManaCost(card.mana_cost) || card.cmc}
+                    </Badge>
+                    <span className="text-slate-400 text-sm">CMC: {card.cmc}</span>
+                  </div>
+                </div>
+
+                {/* Mana Type/Colors */}
+                <div className="bg-mtg-gray p-4 rounded-lg">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Mana Type</label>
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-1">
+                      {getColorSymbols(card.colors).map((colorInfo, index) => (
+                        <span 
+                          key={index} 
+                          className={`px-2 py-1 rounded text-xs font-bold border ${colorInfo.color}`}
+                          data-testid={`color-symbol-${colorInfo.symbol.toLowerCase()}`}
+                        >
+                          {colorInfo.symbol}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-white text-sm" data-testid="text-mana-type">
+                      {getManaTypeColors(card.colors)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Type */}
+                <div className="bg-mtg-gray p-4 rounded-lg">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Card Type</label>
+                  <p className="text-white font-medium" data-testid="text-type-line">{card.type_line}</p>
+                </div>
+
+                {/* Rarity */}
+                <div className="bg-mtg-gray p-4 rounded-lg">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Rarity</label>
+                  <Badge className={`capitalize text-sm px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-rarity">
+                    {card.rarity}
+                  </Badge>
+                </div>
               </div>
 
-              {/* Type */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Type</label>
-                <p className="text-white" data-testid="text-type-line">{card.type_line}</p>
-              </div>
+              {/* Market Value Section */}
+              {(() => {
+                const priceRange = getPriceRange(card.prices);
+                return priceRange && (
+                  <div className="bg-mtg-gray p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-slate-300 mb-3">Market Value Estimates</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {priceRange.hasRange ? (
+                        <>
+                          <div className="text-center">
+                            <p className="text-sm text-slate-400">Low</p>
+                            <p className="text-green-300 text-lg font-semibold" data-testid="text-price-low">
+                              ${priceRange.min.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-slate-400">Average</p>
+                            <p className="text-green-400 text-xl font-bold" data-testid="text-price-avg">
+                              ${priceRange.avg.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-slate-400">High</p>
+                            <p className="text-green-300 text-lg font-semibold" data-testid="text-price-high">
+                              ${priceRange.max.toFixed(2)}
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="col-span-3 text-center">
+                          <p className="text-sm text-slate-400">Current Price</p>
+                          <p className="text-green-400 text-2xl font-bold" data-testid="text-price">
+                            ${priceRange.avg.toFixed(2)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {card.prices?.usd && card.prices?.usd_foil && (
+                      <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-600">
+                        <div className="text-center">
+                          <p className="text-xs text-slate-500">Normal</p>
+                          <p className="text-white font-medium">${card.prices.usd}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-slate-500">Foil</p>
+                          <p className="text-white font-medium">${card.prices.usd_foil}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Oracle Text */}
               {card.oracle_text && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Oracle Text</label>
-                  <p className="text-white bg-mtg-gray p-3 rounded whitespace-pre-wrap" data-testid="text-oracle-text">
-                    {card.oracle_text}
-                  </p>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Oracle Text</label>
+                  <div className="bg-mtg-gray p-4 rounded-lg">
+                    <p className="text-white whitespace-pre-wrap leading-relaxed" data-testid="text-oracle-text">
+                      {card.oracle_text}
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* Card Faces for Double-Faced Cards */}
               {card.card_faces && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Card Faces</label>
-                  <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Card Faces</label>
+                  <div className="space-y-3">
                     {card.card_faces.map((face, index) => (
-                      <div key={index} className="bg-mtg-gray p-3 rounded">
-                        <h4 className="font-semibold text-white">{face.name}</h4>
-                        <p className="text-sm text-slate-300">{face.type_line}</p>
+                      <div key={index} className="bg-mtg-gray p-4 rounded-lg border border-slate-600">
+                        <h4 className="font-semibold text-white text-lg mb-2">{face.name}</h4>
+                        <p className="text-sm text-slate-300 mb-2">{face.type_line}</p>
                         {face.oracle_text && (
-                          <p className="text-sm text-white mt-1">{face.oracle_text}</p>
+                          <p className="text-sm text-white whitespace-pre-wrap">{face.oracle_text}</p>
                         )}
                       </div>
                     ))}
@@ -126,37 +216,20 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
                 </div>
               )}
 
-              {/* Set and Rarity */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Additional Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-1">Set</label>
                   <p className="text-white" data-testid="text-set-name">{card.set_name}</p>
+                  <p className="text-slate-400 text-sm" data-testid="text-set-code">({card.set.toUpperCase()})</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Rarity</label>
-                  <Badge className={`capitalize ${getRarityColor(card.rarity)}`} data-testid="text-rarity">
-                    {card.rarity}
-                  </Badge>
-                </div>
+                {card.artist && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">Artist</label>
+                    <p className="text-white" data-testid="text-artist">{card.artist}</p>
+                  </div>
+                )}
               </div>
-
-              {/* Artist */}
-              {card.artist && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Artist</label>
-                  <p className="text-white" data-testid="text-artist">{card.artist}</p>
-                </div>
-              )}
-
-              {/* Market Price */}
-              {card.prices?.usd && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Market Price</label>
-                  <p className="text-green-400 text-xl font-semibold" data-testid="text-price">
-                    ${card.prices.usd}
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Action Buttons */}
