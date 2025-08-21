@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -51,12 +51,43 @@
   --tracking-normal: 0em;
   --spacing: 0.25rem;
   
-  /* MTG Theme Colors */
+  /* MTG Theme Colors - Enhanced */
   --mtg-primary: hsl(243 75% 59%);
+  --mtg-primary-light: hsl(243 75% 69%);
+  --mtg-primary-dark: hsl(243 75% 49%);
   --mtg-secondary: hsl(215 28% 17%);
+  --mtg-secondary-light: hsl(215 28% 27%);
   --mtg-accent: hsl(158 64% 52%);
+  --mtg-accent-light: hsl(158 64% 62%);
   --mtg-dark: hsl(217 33% 8%);
   --mtg-gray: hsl(215 20% 28%);
+  --mtg-gold: hsl(45 100% 55%);
+  --mtg-silver: hsl(210 20% 75%);
+  --mtg-bronze: hsl(30 65% 55%);
+  
+  /* Magical Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(243 75% 59%), hsl(280 65% 65%));
+  --gradient-secondary: linear-gradient(135deg, hsl(215 28% 17%), hsl(215 28% 27%));
+  --gradient-accent: linear-gradient(135deg, hsl(158 64% 52%), hsl(175 70% 55%));
+  --gradient-dark: linear-gradient(135deg, hsl(217 33% 8%), hsl(230 35% 12%));
+  --gradient-gold: linear-gradient(135deg, hsl(45 100% 55%), hsl(35 90% 60%));
+  
+  /* Card Rarity Colors */
+  --rarity-common: hsl(210 10% 70%);
+  --rarity-uncommon: hsl(210 50% 75%);
+  --rarity-rare: hsl(45 100% 65%);
+  --rarity-mythic: hsl(15 90% 65%);
+  
+  /* Enhanced Shadows */
+  --shadow-magical: 0 0 20px rgba(123, 97, 255, 0.3), 0 0 40px rgba(123, 97, 255, 0.1);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-card-hover: 0 8px 40px rgba(123, 97, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  --shadow-glow: 0 0 30px rgba(123, 97, 255, 0.5);
+  
+  /* Glass morphism */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-backdrop: blur(10px);
 }
 
 .dark {
@@ -113,33 +144,53 @@
 
   body {
     @apply font-sans antialiased;
-    background-color: var(--mtg-dark);
+    background: var(--gradient-dark);
+    background-attachment: fixed;
     color: hsl(200 6.6667% 91.1765%);
     font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
 @layer utilities {
+  /* Background Utilities */
   .bg-mtg-primary {
-    background-color: var(--mtg-primary);
+    background: var(--gradient-primary);
   }
   
   .bg-mtg-secondary {
-    background-color: var(--mtg-secondary);
+    background: var(--gradient-secondary);
   }
   
   .bg-mtg-accent {
-    background-color: var(--mtg-accent);
+    background: var(--gradient-accent);
   }
   
   .bg-mtg-dark {
-    background-color: var(--mtg-dark);
+    background: var(--gradient-dark);
   }
   
   .bg-mtg-gray {
     background-color: var(--mtg-gray);
   }
   
+  .bg-glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-backdrop);
+    border: 1px solid var(--glass-border);
+  }
+  
+  /* Text Colors */
   .text-mtg-primary {
     color: var(--mtg-primary);
   }
@@ -148,15 +199,132 @@
     color: var(--mtg-accent);
   }
   
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Border Utilities */
   .border-mtg-gray {
     border-color: var(--mtg-gray);
   }
   
+  .border-glass {
+    border: 1px solid var(--glass-border);
+  }
+  
+  /* Shadow Utilities */
+  .shadow-magical {
+    box-shadow: var(--shadow-magical);
+  }
+  
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  /* Hover Effects */
   .hover\:bg-mtg-primary:hover {
-    background-color: hsl(243 75% 54%);
+    background: linear-gradient(135deg, hsl(243 75% 64%), hsl(280 65% 70%));
   }
   
   .hover\:bg-mtg-accent:hover {
-    background-color: hsl(158 64% 47%);
+    background: linear-gradient(135deg, hsl(158 64% 57%), hsl(175 70% 60%));
   }
+  
+  .hover\:shadow-magical:hover {
+    box-shadow: var(--shadow-magical);
+  }
+  
+  .hover\:shadow-card-hover:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  
+  /* Animation Classes */
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+/* Custom Animations */
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px rgba(123, 97, 255, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(123, 97, 255, 0.6);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--mtg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gradient-accent);
 }

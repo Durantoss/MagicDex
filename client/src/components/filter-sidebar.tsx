@@ -76,52 +76,73 @@ export default function FilterSidebar({ onFiltersChange, currentFilters }: Filte
   };
 
   return (
-    <aside className="w-80 bg-mtg-secondary border-r border-slate-700 p-6 overflow-y-auto">
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-4" data-testid="text-filters-title">Advanced Filters</h3>
+    <aside className="w-80 bg-glass border-r border-glass p-8 overflow-y-auto backdrop-blur-md">
+      <div className="space-y-8">
+        <div className="relative">
+          <h3 className="text-2xl font-bold text-gradient-primary mb-2" data-testid="text-filters-title">
+            Advanced Filters
+          </h3>
+          <p className="text-sm text-slate-400 mb-4">
+            Refine your search with precision
+          </p>
+          <div className="w-12 h-0.5 bg-gradient-primary rounded-full"></div>
         </div>
 
-        {/* Mana Cost Filter */}
-        <div className="space-y-3">
-          <Label className="block text-sm font-medium text-slate-300">Mana Cost</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              type="number"
-              placeholder="Min"
-              value={minCmc || ""}
-              onChange={(e) => setMinCmc(e.target.value ? parseInt(e.target.value) : undefined)}
-              className="bg-mtg-gray border border-slate-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-mtg-primary"
-              data-testid="input-min-cmc"
-            />
-            <Input
-              type="number"
-              placeholder="Max"
-              value={maxCmc || ""}
-              onChange={(e) => setMaxCmc(e.target.value ? parseInt(e.target.value) : undefined)}
-              className="bg-mtg-gray border border-slate-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-mtg-primary"
-              data-testid="input-max-cmc"
-            />
+        {/* Enhanced Mana Cost Filter */}
+        <div className="space-y-4">
+          <Label className="block text-sm font-semibold text-white flex items-center space-x-2">
+            <span className="w-2 h-2 bg-gradient-gold rounded-full"></span>
+            <span>Mana Cost Range</span>
+          </Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="relative">
+              <Input
+                type="number"
+                placeholder="Min"
+                value={minCmc || ""}
+                onChange={(e) => setMinCmc(e.target.value ? parseInt(e.target.value) : undefined)}
+                className="bg-glass border-glass rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:shadow-glow transition-all duration-300 hover:scale-105"
+                data-testid="input-min-cmc"
+              />
+              <div className="absolute inset-0 rounded-xl bg-gradient-primary opacity-0 hover:opacity-5 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
+            <div className="relative">
+              <Input
+                type="number"
+                placeholder="Max"
+                value={maxCmc || ""}
+                onChange={(e) => setMaxCmc(e.target.value ? parseInt(e.target.value) : undefined)}
+                className="bg-glass border-glass rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:shadow-glow transition-all duration-300 hover:scale-105"
+                data-testid="input-max-cmc"
+              />
+              <div className="absolute inset-0 rounded-xl bg-gradient-primary opacity-0 hover:opacity-5 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
           </div>
         </div>
 
-        {/* Color Identity */}
-        <div className="space-y-3">
-          <Label className="block text-sm font-medium text-slate-300">Color Identity</Label>
+        {/* Enhanced Color Identity */}
+        <div className="space-y-4">
+          <Label className="block text-sm font-semibold text-white flex items-center space-x-2">
+            <span className="w-2 h-2 bg-gradient-accent rounded-full"></span>
+            <span>Color Identity</span>
+          </Label>
           <div className="grid grid-cols-3 gap-2">
             {colors.map((color) => (
               <Button
                 key={color.symbol}
                 type="button"
                 onClick={() => handleColorToggle(color.symbol)}
-                className={`p-2 rounded text-sm transition-colors ${
+                className={`relative p-3 rounded-xl text-sm font-bold transition-all duration-300 hover:scale-110 hover:shadow-glow group ${
                   selectedColors.includes(color.symbol)
-                    ? `${color.color} opacity-100`
-                    : `${color.color} opacity-50 hover:opacity-75`
+                    ? `${color.color} opacity-100 shadow-card scale-105`
+                    : `${color.color} opacity-60 hover:opacity-90`
                 }`}
                 data-testid={`button-color-${color.symbol.toLowerCase()}`}
               >
                 {color.symbol}
+                {selectedColors.includes(color.symbol) && (
+                  <div className="absolute inset-0 rounded-xl bg-white opacity-20 animate-pulse"></div>
+                )}
               </Button>
             ))}
           </div>
@@ -188,24 +209,24 @@ export default function FilterSidebar({ onFiltersChange, currentFilters }: Filte
           </div>
         </div>
 
-        {/* Apply Filters Button */}
-        <Button
-          onClick={applyFilters}
-          className="w-full bg-mtg-primary hover:bg-mtg-primary/90 text-white py-2 px-4 rounded-lg transition-colors duration-200"
-          data-testid="button-apply-filters"
-        >
-          Apply Filters
-        </Button>
+        {/* Enhanced Action Buttons */}
+        <div className="space-y-3">
+          <Button
+            onClick={applyFilters}
+            className="w-full bg-mtg-primary hover:shadow-magical text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-card animate-glow"
+            data-testid="button-apply-filters"
+          >
+            Apply Filters
+          </Button>
 
-        {/* Clear Filters */}
-        <Button
-          onClick={clearFilters}
-          variant="outline"
-          className="w-full bg-slate-600 hover:bg-slate-500 text-white py-2 px-4 rounded-lg transition-colors duration-200"
-          data-testid="button-clear-filters"
-        >
-          Clear All
-        </Button>
+          <Button
+            onClick={clearFilters}
+            className="w-full bg-glass border-glass text-slate-300 hover:text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-card backdrop-blur-md"
+            data-testid="button-clear-filters"
+          >
+            Clear All
+          </Button>
+        </div>
       </div>
     </aside>
   );

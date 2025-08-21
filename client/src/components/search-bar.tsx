@@ -34,16 +34,43 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative">
-      <Input
-        type="text"
-        value={query}
-        onChange={handleInputChange}
-        placeholder="Search cards by name, text, or type..."
-        className="w-full bg-mtg-gray text-white placeholder-slate-400 border border-slate-600 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-mtg-primary focus:border-transparent"
-        data-testid="input-search"
-      />
-      <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+    <form onSubmit={handleSubmit} className="relative group">
+      {/* Enhanced Search Input */}
+      <div className="relative">
+        <Input
+          type="text"
+          value={query}
+          onChange={handleInputChange}
+          placeholder="Search for magic cards, spells, creatures..."
+          className="w-full h-14 bg-glass border-glass rounded-2xl px-6 py-4 pl-14 text-white text-lg placeholder-slate-400 transition-all duration-300 focus:outline-none focus:shadow-magical focus:scale-105 hover:shadow-card backdrop-blur-md"
+          data-testid="input-search"
+        />
+        
+        {/* Enhanced Search Icon */}
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+          <Search className="h-6 w-6 text-slate-400 group-focus-within:text-gradient-primary transition-all duration-300 group-hover:scale-110" />
+        </div>
+        
+        {/* Magical Border Effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-primary opacity-0 group-hover:opacity-10 group-focus-within:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
+        
+        {/* Search Suggestions Hint */}
+        {query.length === 0 && (
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+            <div className="flex items-center space-x-2 text-xs text-slate-500">
+              <span className="bg-glass px-2 py-1 rounded-full border border-glass">⌘K</span>
+              <span>Quick search</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Active Search Indicator */}
+        {query.length > 0 && (
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+            <div className="w-2 h-2 bg-gradient-accent rounded-full animate-pulse"></div>
+          </div>
+        )}
+      </div>
     </form>
   );
 }
