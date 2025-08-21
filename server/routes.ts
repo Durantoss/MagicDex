@@ -534,6 +534,42 @@ Please provide a helpful answer that explains the rule clearly and concisely. If
     }
   });
 
+  // AI Dictionary Q&A endpoint
+  app.post("/api/ai/dictionary", async (req, res) => {
+    try {
+      const { question } = req.body;
+      
+      if (!question || typeof question !== "string") {
+        return res.status(400).json({ error: "Question is required" });
+      }
+
+      const prompt = `You are helping someone learn Magic: The Gathering. They asked: "${question}"
+
+Please provide a concise, helpful answer that:
+1. Explains the Magic term or concept clearly
+2. Uses simple language (4th grade reading level)
+3. Includes 1-2 practical examples from actual Magic cards or gameplay
+4. Stays focused on the specific question asked
+5. Keeps the response under 3 sentences
+
+If the question isn't about Magic: The Gathering, politely redirect them to ask about Magic terms instead.`;
+
+      const message = await anthropic.messages.create({
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }],
+        model: DEFAULT_MODEL_STR,
+      });
+
+      const firstContent = message.content[0];
+      const response = (firstContent?.type === 'text' ? firstContent.text : null) || "I'm sorry, I couldn't generate a response. Please try asking about a specific Magic: The Gathering term.";
+
+      res.json({ answer: response });
+    } catch (error) {
+      console.error("AI Dictionary error:", error);
+      res.status(500).json({ error: "Failed to get AI response" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

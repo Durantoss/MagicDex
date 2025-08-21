@@ -2,8 +2,11 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, BookOpen, Sparkles, Zap } from "lucide-react";
+import { Search, BookOpen, Sparkles, Zap, MessageCircle, Send } from "lucide-react";
 import { Link } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 // MTG Dictionary data with 4th grade reading level definitions
 const mtgTerms = [
@@ -239,6 +242,34 @@ const categories = ["All", "Card Types", "Actions", "Game Zones", "Mana", "Comba
 export default function Dictionary() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const { toast } = useToast();
+
+  // AI Q&A mutation
+  const aiQuestionMutation = useMutation({
+    mutationFn: async (question: string) => {
+      const response = await apiRequest("POST", "/api/ai/dictionary", { question });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setAiResponse(data.answer);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAskAI = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (aiQuestion.trim()) {
+      aiQuestionMutation.mutate(aiQuestion.trim());
+    }
+  };
 
   const filteredTerms = useMemo(() => {
     return mtgTerms.filter(term => {
@@ -303,6 +334,62 @@ export default function Dictionary() {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* AI Q&A Section */}
+        <div className="bg-gradient-to-r from-mtg-primary/10 to-purple-600/10 border border-mtg-primary/20 rounded-2xl p-6 mb-8 shadow-magical">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="relative">
+              <MessageCircle className="h-6 w-6 text-mtg-primary" />
+              <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-purple-400 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Ask the AI Wizard</h2>
+              <p className="text-sm text-slate-400">Get quick explanations of any Magic term with examples</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleAskAI} className="space-y-4">
+            <div className="relative">
+              <Input
+                type="text"
+                value={aiQuestion}
+                onChange={(e) => setAiQuestion(e.target.value)}
+                placeholder="Ask about any Magic term... (e.g., 'What is flying?' or 'How does trample work?')"
+                className="w-full h-12 bg-slate-800/50 border-slate-600 rounded-xl px-4 py-3 pr-16 text-white text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-mtg-primary"
+                disabled={aiQuestionMutation.isPending}
+                data-testid="input-ai-question"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!aiQuestion.trim() || aiQuestionMutation.isPending}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-mtg-primary hover:bg-mtg-primary/80 text-white px-3 py-2 rounded-lg transition-all duration-200"
+                data-testid="button-ask-ai"
+              >
+                {aiQuestionMutation.isPending ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {aiResponse && (
+              <div className="bg-slate-800/30 border border-slate-600/50 rounded-xl p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="bg-gradient-to-r from-mtg-primary to-purple-600 rounded-full p-2 flex-shrink-0 mt-1">
+                    <Sparkles className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white text-base leading-relaxed" data-testid="text-ai-response">
+                      {aiResponse}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </form>
+        </div>
+
         {/* Search and Filter Section */}
         <div className="bg-glass border-glass rounded-2xl p-6 mb-8 shadow-card">
           <div className="space-y-6">
