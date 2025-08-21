@@ -66,10 +66,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-mtg-dark text-slate-100">
-      {/* Enhanced Header */}
+      {/* Enhanced Mobile-Optimized Header */}
       <header className="bg-glass border-b border-glass backdrop-blur-md sticky top-0 z-50 shadow-magical">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          {/* Desktop Header Layout */}
+          <div className="hidden lg:flex items-center justify-between h-20">
             {/* Enhanced Logo and Brand */}
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-3">
@@ -136,6 +137,74 @@ export default function Home() {
                   <div className="absolute inset-0 bg-mtg-secondary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
               </Link>
+            </div>
+          </div>
+
+          {/* Mobile Header Layout */}
+          <div className="lg:hidden">
+            {/* Top Row - Logo and Profile */}
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <div className="text-2xl animate-glow">✨</div>
+                  <div className="absolute inset-0 text-2xl animate-pulse opacity-50">✨</div>
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-gradient-primary" data-testid="text-site-title">
+                    MTG Database
+                  </h1>
+                </div>
+              </div>
+              
+              <Link href="/profile">
+                <Button 
+                  size="sm"
+                  className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass"
+                  data-testid="button-profile-mobile"
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            {/* Second Row - Search Bar */}
+            <div className="pb-3">
+              <div className="relative">
+                <SearchBar onSearch={handleSearch} />
+                <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-20 blur-sm animate-pulse pointer-events-none"></div>
+              </div>
+            </div>
+
+            {/* Third Row - Action Buttons */}
+            <div className="flex items-center justify-center space-x-2 pb-3">
+              <Link href="/rules">
+                <Button 
+                  size="sm"
+                  className="relative bg-gradient-gold hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-xs"
+                  data-testid="button-rules-mobile"
+                >
+                  <Book className="mr-1 h-3 w-3" />
+                  Rules
+                </Button>
+              </Link>
+              <Button 
+                size="sm"
+                onClick={() => setShowDeckBuilderModal(true)}
+                className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-xs"
+                data-testid="button-deck-builder-mobile"
+              >
+                <Wand2 className="mr-1 h-3 w-3" />
+                AI Builder
+              </Button>
+              <Button 
+                size="sm"
+                onClick={() => setShowCollectionModal(true)}
+                className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-xs"
+                data-testid="button-collection-mobile"
+              >
+                <Bookmark className="mr-1 h-3 w-3" />
+                Collection
+              </Button>
             </div>
           </div>
         </div>

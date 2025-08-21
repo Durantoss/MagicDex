@@ -48,13 +48,17 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           value={query}
           onChange={handleInputChange}
           placeholder="Search for magic cards, spells, creatures..."
-          className="w-full h-14 bg-glass border-glass rounded-2xl px-6 py-4 pl-14 text-white text-lg placeholder-slate-400 transition-all duration-300 focus:outline-none focus:shadow-magical focus:scale-105 hover:shadow-card backdrop-blur-md"
+          className="w-full h-12 sm:h-14 bg-glass border-glass rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 pl-12 sm:pl-14 text-white text-base sm:text-lg placeholder-slate-400 transition-all duration-300 focus:outline-none focus:shadow-magical focus:scale-[1.02] sm:focus:scale-105 hover:shadow-card backdrop-blur-md touch-manipulation"
           data-testid="input-search"
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck="false"
         />
         
         {/* Enhanced Search Icon */}
-        <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-          <Search className="h-6 w-6 text-slate-400 group-focus-within:text-gradient-primary transition-all duration-300 group-hover:scale-110" />
+        <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2">
+          <Search className="h-5 w-5 sm:h-6 sm:w-6 text-slate-400 group-focus-within:text-gradient-primary transition-all duration-300 group-hover:scale-110" />
         </div>
         
         {/* Magical Border Effect */}
@@ -63,8 +67,8 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         
         {/* Active Search Indicator */}
         {query.length > 0 && (
-          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-            <div className="w-2 h-2 bg-gradient-accent rounded-full animate-pulse"></div>
+          <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2">
+            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-gradient-accent rounded-full animate-pulse"></div>
           </div>
         )}
       </div>
