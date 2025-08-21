@@ -8,231 +8,231 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-// MTG Dictionary data with 4th grade reading level definitions
+// MTG Dictionary data with 6th grade reading level definitions
 const mtgTerms = [
   // Basic Game Terms
   {
     term: "Artifact",
-    definition: "A magic item that stays on the battlefield and helps you during the game. Like a sword or a treasure chest.",
+    definition: "A magical object that remains on the battlefield to provide ongoing benefits. Artifacts represent equipment, vehicles, or other constructed items that enhance your strategy.",
     category: "Card Types"
   },
   {
     term: "Creature", 
-    definition: "A monster, animal, or person that can fight for you. Creatures can attack your opponent and block their creatures.",
+    definition: "A permanent card representing beings that can battle on your behalf. Creatures have power and toughness values and can attack opponents or defend you by blocking.",
     category: "Card Types"
   },
   {
     term: "Spell",
-    definition: "Magic that happens right away when you play it. After the magic happens, the spell goes away.",
+    definition: "A magical effect that resolves immediately when cast, then goes to the graveyard. Spells include instants and sorceries that create temporary effects.",
     category: "Card Types"
   },
   {
     term: "Enchantment",
-    definition: "Magic that stays on the battlefield and changes how the game works. Like a rule that keeps helping you.",
+    definition: "A magical effect that remains on the battlefield permanently, altering the rules of the game. Enchantments provide continuous benefits or abilities.",
     category: "Card Types"
   },
   {
     term: "Planeswalker",
-    definition: "A powerful wizard friend who helps you with their special powers. They can be attacked like you can.",
+    definition: "A powerful ally representing magical beings who can be summoned to assist you. Planeswalkers have loyalty counters and unique abilities that can influence the battlefield.",
     category: "Card Types"
   },
   {
     term: "Land",
-    definition: "Cards that give you mana (magic energy) to cast spells. Like forests, mountains, and islands.",
+    definition: "The foundation of your mana base, representing locations that produce magical energy. Different land types generate specific colors of mana needed to cast spells.",
     category: "Card Types"
   },
 
   // Game Actions
   {
     term: "Attack",
-    definition: "When your creatures try to hurt your opponent. You choose which creatures attack each turn.",
+    definition: "The combat action where creatures attempt to deal damage to opponents or their planeswalkers. Attacking creatures become tapped unless they have vigilance.",
     category: "Actions"
   },
   {
     term: "Block",
-    definition: "When your creatures stand in front of attacking creatures to protect you from getting hurt.",
+    definition: "The defensive action where creatures intercept attacking creatures to prevent damage. Blocking can result in combat between creatures.",
     category: "Actions"
   },
   {
     term: "Cast",
-    definition: "To play a spell or creature by paying its cost. Like buying something with mana instead of money.",
+    definition: "The process of playing a spell by paying its mana cost and following proper timing rules. Casting puts spells onto the stack to await resolution.",
     category: "Actions"
   },
   {
     term: "Tap",
-    definition: "To turn a card sideways to show it was used. Tapped cards can't be used again until next turn.",
+    definition: "To rotate a card 90 degrees sideways, indicating it has been activated or used. Tapped permanents cannot be tapped again until they untap.",
     category: "Actions"
   },
   {
     term: "Untap",
-    definition: "To turn a tapped card back upright so it can be used again. This happens at the start of your turn.",
+    definition: "To rotate a tapped card back to its upright position, making it available for use again. Most permanents untap automatically during your untap step.",
     category: "Actions"
   },
   {
     term: "Draw",
-    definition: "To take a card from the top of your deck and put it in your hand so you can play it.",
+    definition: "To move the top card of your library into your hand, increasing your available options. Drawing typically occurs during your draw step and from spell effects.",
     category: "Actions"
   },
   {
     term: "Discard",
-    definition: "To put a card from your hand into your graveyard. Sometimes you choose, sometimes you have to.",
+    definition: "To place a card from your hand into your graveyard, either by choice or due to game effects. Discarding can trigger abilities on certain cards.",
     category: "Actions"
   },
 
   // Game Zones
   {
     term: "Battlefield",
-    definition: "The area where creatures, artifacts, and other permanent cards go when you play them.",
+    definition: "The shared play area where all permanent cards exist and interact. This zone contains creatures, artifacts, enchantments, lands, and planeswalkers that are currently in play.",
     category: "Game Zones"
   },
   {
     term: "Hand",
-    definition: "The cards you hold that your opponent can't see. You can play cards from your hand.",
+    definition: "Your private collection of cards available for casting, hidden from opponents. The hand represents your immediate strategic options and resources.",
     category: "Game Zones"
   },
   {
     term: "Deck",
-    definition: "The pile of cards you haven't drawn yet. Also called your library. You draw cards from the top.",
+    definition: "Your personal library of cards arranged in a specific order, face-down. Also called your library, this zone supplies new cards through drawing.",
     category: "Game Zones"
   },
   {
     term: "Graveyard",
-    definition: "Where cards go after they're used up or destroyed. Like a trash pile, but some spells can bring cards back.",
+    definition: "The discard zone where used, destroyed, or discarded cards accumulate. While cards here are typically inactive, some spells can retrieve them.",
     category: "Game Zones"
   },
   {
     term: "Exile",
-    definition: "A place where cards go when they're removed from the game. Usually they can't come back.",
+    definition: "A separate zone for cards temporarily or permanently removed from the game. Exiled cards are typically inaccessible unless specific effects return them.",
     category: "Game Zones"
   },
 
   // Mana and Costs
   {
     term: "Mana",
-    definition: "The magic energy you need to cast spells. You get it from lands and some other cards.",
+    definition: "The fundamental magical energy resource required to cast spells and activate abilities. Mana comes in five colors plus colorless variants.",
     category: "Mana"
   },
   {
     term: "Mana Cost",
-    definition: "How much mana you need to pay to cast a spell. It's shown in the top right corner of cards.",
+    definition: "The specific amount and type of mana required to cast a spell, displayed in the upper-right corner. Costs may include colored and generic mana requirements.",
     category: "Mana"
   },
   {
     term: "Converted Mana Cost",
-    definition: "The total amount of mana a spell costs, counting all colors. A spell costing 2 red and 1 blue has a converted cost of 3.",
+    definition: "The total numerical value of a spell's mana cost, regardless of color. For example, a spell costing two red and one blue mana has a converted cost of three.",
     category: "Mana"
   },
 
   // Combat Terms
   {
     term: "Power",
-    definition: "How much damage a creature deals when it attacks or blocks. The first number in the bottom right.",
+    definition: "A creature's offensive combat value, representing the amount of damage it deals during combat. Power is the first number in the bottom-right corner.",
     category: "Combat"
   },
   {
     term: "Toughness", 
-    definition: "How much damage a creature can take before it dies. The second number in the bottom right.",
+    definition: "A creature's defensive combat value, representing how much damage it can withstand before being destroyed. Toughness is the second number in the bottom-right corner.",
     category: "Combat"
   },
   {
     term: "Flying",
-    definition: "A creature with wings that can only be blocked by other creatures with flying or reach.",
+    definition: "A keyword ability that allows creatures to attack and block in aerial combat. Only creatures with flying or reach can block flying creatures.",
     category: "Abilities"
   },
   {
     term: "First Strike",
-    definition: "This creature deals damage first in a fight. If it kills the other creature, it doesn't get hurt back.",
+    definition: "A combat ability allowing creatures to deal damage before regular combat damage. This can eliminate blockers before they can retaliate.",
     category: "Abilities"
   },
   {
     term: "Trample",
-    definition: "If this creature is blocked, extra damage goes through to hurt the opponent.",
+    definition: "An ability that allows excess combat damage to carry over to the defending player when blocked. The remainder flows past the blocking creature.",
     category: "Abilities"
   },
   {
     term: "Vigilance",
-    definition: "This creature doesn't need to tap when it attacks, so it can still block on the opponent's turn.",
+    definition: "A keyword ability that prevents creatures from tapping when attacking. This allows them to remain available for defensive blocking.",
     category: "Abilities"
   },
   {
     term: "Lifelink",
-    definition: "When this creature deals damage, you gain that much life. Helps you stay in the game longer.",
+    definition: "An ability that causes damage dealt by the creature to also increase your life total by the same amount. This provides both offense and healing.",
     category: "Abilities"
   },
   {
     term: "Deathtouch",
-    definition: "Any damage this creature deals to another creature will kill it, even just 1 damage.",
+    definition: "A keyword ability making any amount of damage dealt by this creature lethal to other creatures. Even one point of damage will destroy the target.",
     category: "Abilities"
   },
   {
     term: "Haste",
-    definition: "This creature can attack right away, even on the turn you play it.",
+    definition: "An ability that removes summoning sickness, allowing creatures to attack immediately upon entering the battlefield. This provides immediate offensive pressure.",
     category: "Abilities"
   },
 
   // Game Flow
   {
     term: "Turn",
-    definition: "One player's time to play. You untap, draw a card, play cards, attack, then the next player goes.",
+    definition: "The structured sequence of phases during which a player takes actions. Each turn includes untapping, drawing, main phases, combat, and passing priority to the next player.",
     category: "Game Flow"
   },
   {
     term: "Phase",
-    definition: "Different parts of your turn, like drawing cards, playing spells, or attacking.",
+    definition: "Distinct segments within a turn that govern when specific actions can be performed. Phases include untap, upkeep, draw, main, combat, and end phases.",
     category: "Game Flow"
   },
   {
     term: "Stack",
-    definition: "Where spells wait to happen. The last spell played happens first, like stacking plates.",
+    definition: "The zone where spells and abilities wait to resolve in last-in, first-out order. Players can respond to spells by adding more to the stack.",
     category: "Game Flow"
   },
   {
     term: "Priority",
-    definition: "Who gets to play spells next. Players take turns playing spells before they happen.",
+    definition: "The system determining which player can cast spells or activate abilities next. Priority passes between players until both choose not to act.",
     category: "Game Flow"
   },
 
   // Card Rarity and Sets
   {
     term: "Common",
-    definition: "Cards that show up often in packs. Usually simpler and easier to understand.",
+    definition: "The most frequently printed cards in booster packs, typically featuring straightforward effects and mechanics. Commons form the foundation of most limited formats.",
     category: "Rarity"
   },
   {
     term: "Uncommon", 
-    definition: "Cards that are a bit special but still show up sometimes in packs.",
+    definition: "Cards with moderate complexity and power level that appear less frequently than commons. Uncommons often introduce interesting synergies and build-around themes.",
     category: "Rarity"
   },
   {
     term: "Rare",
-    definition: "Special cards that don't show up very often. Usually more powerful or unique.",
+    definition: "Powerful or mechanically unique cards with limited print quantities. Rares typically feature complex abilities and serve as centerpieces for constructed strategies.",
     category: "Rarity"
   },
   {
     term: "Mythic Rare",
-    definition: "Super special cards that are very hard to find. The most powerful and unique cards.",
+    definition: "The highest rarity tier, reserved for the most powerful, complex, or story-significant cards. Mythic rares appear approximately once per eight booster packs.",
     category: "Rarity"
   },
   {
     term: "Set",
-    definition: "A group of cards that were made together and have similar themes or mechanics.",
+    definition: "A collection of cards released together that share thematic elements, mechanics, and storylines. Sets define the Standard format and tournament legality.",
     category: "Sets"
   },
 
   // Deck Building
   {
     term: "Format",
-    definition: "Rules about which cards you can use in your deck, like Standard or Commander.",
+    definition: "Organized play systems that define which cards are legal for tournament competition. Formats like Standard, Modern, and Commander each have different deck construction rules.",
     category: "Formats"
   },
   {
     term: "Sideboard",
-    definition: "Extra cards you can swap into your deck between games to help against specific opponents.",
+    definition: "A collection of additional cards that can be swapped with main deck cards between games. Sideboards allow players to adapt their strategy against specific opponents.",
     category: "Deck Building"
   },
   {
     term: "Mulligan",
-    definition: "If you don't like your starting hand, you can shuffle it back and draw one less card.",
+    definition: "The option to shuffle your opening hand back into your library and draw a new hand with one fewer card. Players can mulligan multiple times if needed.",
     category: "Game Rules"
   }
 ];
@@ -324,7 +324,7 @@ export default function Dictionary() {
                     MTG Dictionary
                   </h1>
                   <p className="text-sm text-slate-400 font-medium">
-                    Simple definitions for Magic terms
+                    Comprehensive definitions for Magic terminology
                   </p>
                 </div>
               </div>
@@ -343,7 +343,7 @@ export default function Dictionary() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Ask the AI Wizard</h2>
-              <p className="text-sm text-slate-400">Get quick explanations of any Magic term with examples</p>
+              <p className="text-sm text-slate-400">Receive detailed explanations of Magic concepts with practical examples</p>
             </div>
           </div>
 
@@ -353,7 +353,7 @@ export default function Dictionary() {
                 type="text"
                 value={aiQuestion}
                 onChange={(e) => setAiQuestion(e.target.value)}
-                placeholder="Ask about any Magic term... (e.g., 'What is flying?' or 'How does trample work?')"
+                placeholder="Ask about any Magic concept... (e.g., 'Explain flying mechanics' or 'How does trample function in combat?')"
                 className="w-full h-12 bg-slate-800/50 border-slate-600 rounded-xl px-4 py-3 pr-16 text-white text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-mtg-primary"
                 disabled={aiQuestionMutation.isPending}
                 data-testid="input-ai-question"
@@ -496,11 +496,11 @@ export default function Dictionary() {
         <div className="mt-12 bg-gradient-to-r from-mtg-primary/10 to-mtg-accent/10 border border-mtg-primary/20 rounded-2xl p-6">
           <div className="flex items-center space-x-3 mb-3">
             <Zap className="h-6 w-6 text-mtg-primary" />
-            <h3 className="text-lg font-bold text-white">Learning Tip</h3>
+            <h3 className="text-lg font-bold text-white">Strategy Guide</h3>
           </div>
           <p className="text-slate-300 leading-relaxed">
-            New to Magic? Start by learning <strong>creatures</strong>, <strong>spells</strong>, and <strong>mana</strong>. 
-            These are the building blocks of every Magic game! Once you know these, try learning about <strong>attacking</strong> and <strong>blocking</strong>.
+            Beginning your Magic journey? Focus first on mastering <strong>creatures</strong>, <strong>spells</strong>, and <strong>mana management</strong>. 
+            These fundamental concepts form the foundation of strategic gameplay. After understanding the basics, advance to <strong>combat mechanics</strong> and <strong>timing interactions</strong>.
           </p>
         </div>
       </div>

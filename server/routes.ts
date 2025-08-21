@@ -546,11 +546,11 @@ Please provide a helpful answer that explains the rule clearly and concisely. If
       const prompt = `You are helping someone learn Magic: The Gathering. They asked: "${question}"
 
 Please provide a concise, helpful answer that:
-1. Explains the Magic term or concept clearly
-2. Uses simple language (4th grade reading level)
-3. Includes 1-2 practical examples from actual Magic cards or gameplay
+1. Explains the Magic term or concept clearly and thoroughly
+2. Uses appropriate vocabulary for 6th grade reading level (more sophisticated than elementary but still accessible)
+3. Includes 1-2 practical examples from actual Magic cards or gameplay scenarios
 4. Stays focused on the specific question asked
-5. Keeps the response under 3 sentences
+5. Keeps the response to 2-4 sentences with proper explanations
 
 If the question isn't about Magic: The Gathering, politely redirect them to ask about Magic terms instead.`;
 
