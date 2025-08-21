@@ -1,6 +1,7 @@
 import { ScryfallCard } from "@/types/scryfall";
 import { getCardImageUrl, formatManaCost, getRarityColor } from "@/lib/scryfall-api";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -147,14 +148,29 @@ export default function CardGrid({
                   <p className="text-sm text-slate-300 font-medium" data-testid={`text-card-type-${card.id}`}>
                     {card.type_line}
                   </p>
+                  {card.set_name && (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-mtg-accent font-medium bg-slate-800/50 px-2 py-1 rounded">
+                        {card.set_name} ({card.set?.toUpperCase()})
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded font-medium ${getRarityColor(card.rarity)} text-white`}>
+                        {card.rarity}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex items-center justify-between">
                   {/* Enhanced Mana Cost / CMC Display */}
                   <div className="flex items-center space-x-2">
-                    <span className={`text-sm text-white px-3 py-1.5 rounded-full font-semibold shadow-sm ${getRarityColor(card.rarity)} backdrop-blur-sm`}>
+                    <span className="text-sm text-white px-3 py-1.5 rounded-full font-semibold shadow-sm bg-slate-700 backdrop-blur-sm">
                       {formatManaCost(card.mana_cost) || `${card.cmc} CMC`}
                     </span>
+                    {card.prices?.usd && (
+                      <span className="text-xs text-green-400 font-bold">
+                        ${parseFloat(card.prices.usd).toFixed(2)}
+                      </span>
+                    )}
                   </div>
                   
                   {/* Enhanced Collection Toggle Button */}

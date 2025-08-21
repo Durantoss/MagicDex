@@ -21,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Search cards via Scryfall API
   app.get("/api/cards/search", async (req, res) => {
     try {
-      const { q, page = "1" } = req.query;
+      const { q, page = "1", unique = "prints" } = req.query;
       
       if (!q || typeof q !== "string") {
         return res.status(400).json({ error: "Search query is required" });
@@ -30,6 +30,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const scryfallUrl = new URL("https://api.scryfall.com/cards/search");
       scryfallUrl.searchParams.set("q", q);
       scryfallUrl.searchParams.set("page", page.toString());
+      // Show card variations/printings instead of unique cards only
+      scryfallUrl.searchParams.set("unique", unique.toString());
+      // Order by release date to show newer printings first, then by set
+      scryfallUrl.searchParams.set("order", "released");
+      scryfallUrl.searchParams.set("dir", "desc");
 
       const response = await fetch(scryfallUrl.toString());
       
