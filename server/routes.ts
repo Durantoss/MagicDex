@@ -3,10 +3,16 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertCollectionSchema } from "@shared/schema";
 import { z } from "zod";
+import Anthropic from '@anthropic-ai/sdk';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Mock user ID for demo - in production this would come from authentication
   const DEMO_USER_ID = "demo-user";
+
+  // Initialize Anthropic client
+  const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
 
   // Search cards via Scryfall API
   app.get("/api/cards/search", async (req, res) => {
@@ -137,6 +143,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Update collection error:", error);
       res.status(500).json({ error: "Failed to update collection" });
+    }
+  });
+
+  // AI Deck Builder endpoint
+  app.post("/api/deck-builder", async (req, res) => {
+    try {
+      const { deckType, strategy } = req.body;
+      
+      // Get user collection
+      const collection = await storage.getUserCollection(DEMO_USER_ID);
+      
+      if (collection.length === 0) {
+        return res.status(400).json({ 
+          error: "No cards in collection", 
+          message: "Add some cards to your collection first to build decks!" 
+        });
+      }
+
+      // Prepare collection data for AI analysis
+      const collectionSummary = collection.map(item => {
+        const cardData = item.cardData as any;
+        return {
+          name: cardData.name,
+          type: cardData.type_line,
+          colors: cardData.colors || [],
+          cmc: cardData.cmc,
+          rarity: cardData.rarity,
+          quantity: item.quantity,
+          oracle_text: cardData.oracle_text || ""
+        };
+      });
+
+      // Create AI prompt for deck building
+      const prompt = `You are an expert Magic: The Gathering deck builder. I have a collection of cards and want to build a playable deck.
+
+My Collection:
+${collectionSummary.map(card => 
+  `- ${card.name} (${card.type}) - ${card.colors.join('') || 'Colorless'} - CMC ${card.cmc} - Qty: ${card.quantity}${card.oracle_text ? ' - ' + card.oracle_text.slice(0, 100) : ''}`
+).join('\n')}
+
+Deck Requirements:
+- Deck Type: ${deckType || 'Any format (60 cards minimum)'}
+- Strategy: ${strategy || 'Best possible with available cards'}
+- Use ONLY cards from my collection
+- Build a balanced, playable deck
+- Include lands for proper mana base
+
+Please suggest a deck list with:
+1. Main deck (60 cards minimum)
+2. Brief strategy explanation
+3. Mana curve analysis
+4. Key synergies
+5. Suggested gameplay tips
+
+Format your response as JSON with this structure:
+{
+  "deckName": "Deck Name",
+  "strategy": "Brief strategy description",
+  "mainDeck": [
+    {"name": "Card Name", "quantity": 4, "category": "Creature/Spell/Land"}
+  ],
+  "manaBase": "Mana base explanation",
+  "synergies": ["Key synergy 1", "Key synergy 2"],
+  "gameplayTips": ["Tip 1", "Tip 2"],
+  "totalCards": 60
+}`;
+
+      // Call Anthropic API
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
+      });
+
+      const aiResponse = (response.content[0] as any).text;
+      
+      // Try to parse JSON response
+      let deckSuggestion;
+      try {
+        // Extract JSON from response if it's wrapped in markdown or other text
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          deckSuggestion = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("No JSON found in response");
+        }
+      } catch (parseError) {
+        // Fallback: return the raw AI response
+        deckSuggestion = {
+          deckName: "AI Suggested Deck",
+          strategy: "See full response for details",
+          rawResponse: aiResponse,
+          error: "Could not parse structured response"
+        };
+      }
+
+      res.json(deckSuggestion);
+      
+    } catch (error) {
+      console.error("AI Deck Builder error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate deck suggestions",
+        message: "The AI service encountered an error. Please try again."
+      });
     }
   });
 

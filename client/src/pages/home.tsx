@@ -5,10 +5,11 @@ import FilterSidebar from "@/components/filter-sidebar";
 import CardGrid from "@/components/card-grid";
 import CardDetailModal from "@/components/card-detail-modal";
 import CollectionModal from "@/components/collection-modal";
+import DeckBuilderModal from "@/components/deck-builder-modal";
 import { searchCards } from "@/lib/scryfall-api";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
-import { Bookmark, User } from "lucide-react";
+import { Bookmark, User, Wand2 } from "lucide-react";
 
 export default function Home() {
   const [filters, setFilters] = useState<SearchFilters>({
@@ -19,6 +20,7 @@ export default function Home() {
   const [selectedCard, setSelectedCard] = useState<ScryfallCard | null>(null);
   const [showCardModal, setShowCardModal] = useState(false);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
+  const [showDeckBuilderModal, setShowDeckBuilderModal] = useState(false);
 
   const { data: searchResults, isLoading, error } = useQuery({
     queryKey: ["/api/cards/search", filters, currentPage],
@@ -61,6 +63,14 @@ export default function Home() {
 
             {/* User Actions */}
             <div className="flex items-center space-x-4">
+              <Button 
+                onClick={() => setShowDeckBuilderModal(true)}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+                data-testid="button-deck-builder"
+              >
+                <Wand2 className="mr-2 h-4 w-4" />
+                AI Deck Builder
+              </Button>
               <Button 
                 onClick={() => setShowCollectionModal(true)}
                 className="bg-mtg-accent hover:bg-mtg-accent/90 text-white"
@@ -168,6 +178,12 @@ export default function Home() {
       {showCollectionModal && (
         <CollectionModal
           onClose={() => setShowCollectionModal(false)}
+        />
+      )}
+
+      {showDeckBuilderModal && (
+        <DeckBuilderModal
+          onClose={() => setShowDeckBuilderModal(false)}
         />
       )}
     </div>
