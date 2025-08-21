@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Book, MessageCircle, Send, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { InteractiveText } from "@/components/interactive-text";
 
 interface RuleQuestion {
   question: string;
@@ -205,7 +206,7 @@ export default function RulesPage() {
                   Magic: The Gathering Rules
                 </CardTitle>
                 <CardDescription className="text-slate-400">
-                  Learn the fundamentals of Magic with these simple explanations
+                  Learn the fundamentals of Magic with interactive term definitions
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -229,7 +230,7 @@ export default function RulesPage() {
                               {rule.title}
                             </AccordionTrigger>
                             <AccordionContent className="text-slate-300 pb-4">
-                              {rule.content}
+                              <InteractiveText>{rule.content}</InteractiveText>
                             </AccordionContent>
                           </AccordionItem>
                         ))}
