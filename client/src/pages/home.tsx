@@ -9,7 +9,8 @@ import DeckBuilderModal from "@/components/deck-builder-modal";
 import { searchCards } from "@/lib/scryfall-api";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
-import { Bookmark, User, Wand2 } from "lucide-react";
+import { Bookmark, User, Wand2, Book } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Home() {
   const [filters, setFilters] = useState<SearchFilters>({
@@ -63,6 +64,15 @@ export default function Home() {
 
             {/* User Actions */}
             <div className="flex items-center space-x-4">
+              <Link href="/rules">
+                <Button 
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  data-testid="button-rules"
+                >
+                  <Book className="mr-2 h-4 w-4" />
+                  Rules Guide
+                </Button>
+              </Link>
               <Button 
                 onClick={() => setShowDeckBuilderModal(true)}
                 className="bg-purple-600 hover:bg-purple-700 text-white"

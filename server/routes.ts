@@ -14,6 +14,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
 
+  // <important_do_not_delete>
+  const DEFAULT_MODEL_STR = "claude-sonnet-4-20250514";
+  // </important_do_not_delete>
+
   // Search cards via Scryfall API
   app.get("/api/cards/search", async (req, res) => {
     try {
@@ -260,6 +264,49 @@ Format your response as JSON with this structure:
       console.error("AI Deck Builder error:", error);
       res.status(500).json({ 
         error: "Failed to generate deck suggestions",
+        message: "The AI service encountered an error. Please try again."
+      });
+    }
+  });
+
+  // Rules Q&A endpoint
+  app.post("/api/rules/ask", async (req, res) => {
+    try {
+      const { question } = req.body;
+      
+      if (!question || typeof question !== 'string') {
+        return res.status(400).json({ error: "Question is required" });
+      }
+
+      // Create AI prompt for MTG rules
+      const prompt = `You are an expert Magic: The Gathering rules advisor. A player is asking about the rules. Please provide a clear, accurate, and concise answer to their question. Focus on the official rules and provide practical examples when helpful.
+
+Player's Question: "${question}"
+
+Please provide a helpful answer that explains the rule clearly and concisely. If the question involves complex interactions, break it down into simple steps. If the question is unclear or too broad, ask for clarification while providing some general guidance.`;
+
+      const response = await anthropic.messages.create({
+        // "claude-sonnet-4-20250514"
+        model: DEFAULT_MODEL_STR,
+        max_tokens: 1000,
+        system: "You are a Magic: The Gathering rules expert. Provide accurate, clear, and helpful explanations of MTG rules. Keep answers concise but thorough.",
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+      });
+
+      const answer = (response.content[0] as any).text;
+
+      res.json({ 
+        question,
+        answer,
+        timestamp: Date.now()
+      });
+
+    } catch (error) {
+      console.error("Rules Q&A error:", error);
+      res.status(500).json({ 
+        error: "Failed to get rules answer",
         message: "The AI service encountered an error. Please try again."
       });
     }
