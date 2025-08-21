@@ -106,6 +106,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear entire collection (must come before :cardId route)
+  app.delete("/api/collection/clear", async (req, res) => {
+    try {
+      await storage.clearCollection(DEMO_USER_ID);
+      res.json({ 
+        success: true, 
+        message: "Collection cleared successfully" 
+      });
+    } catch (error) {
+      console.error("Clear collection error:", error);
+      res.status(500).json({ error: "Failed to clear collection" });
+    }
+  });
+
   // Remove card from collection
   app.delete("/api/collection/:cardId", async (req, res) => {
     try {
@@ -248,79 +262,6 @@ Format your response as JSON with this structure:
         error: "Failed to generate deck suggestions",
         message: "The AI service encountered an error. Please try again."
       });
-    }
-  });
-
-  // Bulk add cards from sets to collection
-  app.post("/api/collection/bulk-add-set", async (req, res) => {
-    try {
-      const { setCode, quantity = 1 } = req.body;
-      
-      if (!setCode) {
-        return res.status(400).json({ error: "Set code is required" });
-      }
-
-      // Search for all cards in the set using Scryfall API
-      const scryfallUrl = new URL("https://api.scryfall.com/cards/search");
-      scryfallUrl.searchParams.set("q", `set:${setCode}`);
-      scryfallUrl.searchParams.set("unique", "cards");
-      
-      const response = await fetch(scryfallUrl.toString());
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          return res.status(404).json({ error: "Set not found" });
-        }
-        throw new Error(`Scryfall API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const cards = data.data || [];
-      
-      let addedCount = 0;
-      let updatedCount = 0;
-
-      // Add each card to collection
-      for (const card of cards) {
-        try {
-          // Check if card already exists in collection
-          const existing = await storage.getCollectionItem(DEMO_USER_ID, card.id);
-          
-          if (existing) {
-            // Update quantity
-            await storage.updateCollectionQuantity(
-              DEMO_USER_ID, 
-              card.id, 
-              existing.quantity + quantity
-            );
-            updatedCount++;
-          } else {
-            // Add new card
-            await storage.addToCollection({
-              userId: DEMO_USER_ID,
-              cardId: card.id,
-              quantity,
-              cardData: card
-            });
-            addedCount++;
-          }
-        } catch (error) {
-          console.error(`Error adding card ${card.name}:`, error);
-        }
-      }
-
-      res.json({
-        success: true,
-        setCode,
-        totalCards: cards.length,
-        addedCount,
-        updatedCount,
-        message: `Added ${addedCount} new cards and updated ${updatedCount} existing cards from ${setCode} set`
-      });
-      
-    } catch (error) {
-      console.error("Bulk add set error:", error);
-      res.status(500).json({ error: "Failed to add cards from set" });
     }
   });
 

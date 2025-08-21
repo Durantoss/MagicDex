@@ -6,7 +6,6 @@ import CardGrid from "@/components/card-grid";
 import CardDetailModal from "@/components/card-detail-modal";
 import CollectionModal from "@/components/collection-modal";
 import DeckBuilderModal from "@/components/deck-builder-modal";
-import { AdminUtils } from "@/components/admin-utils";
 import { searchCards } from "@/lib/scryfall-api";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,6 @@ export default function Home() {
 
             {/* User Actions */}
             <div className="flex items-center space-x-4">
-              <AdminUtils />
               <Button 
                 onClick={() => setShowDeckBuilderModal(true)}
                 className="bg-purple-600 hover:bg-purple-700 text-white"

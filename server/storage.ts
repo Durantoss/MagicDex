@@ -12,6 +12,7 @@ export interface IStorage {
   removeFromCollection(userId: string, cardId: string): Promise<boolean>;
   updateCollectionQuantity(userId: string, cardId: string, quantity: number): Promise<Collection | undefined>;
   getCollectionItem(userId: string, cardId: string): Promise<Collection | undefined>;
+  clearCollection(userId: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -86,6 +87,16 @@ export class MemStorage implements IStorage {
     return Array.from(this.collections.values()).find(
       (collection) => collection.userId === userId && collection.cardId === cardId
     );
+  }
+
+  async clearCollection(userId: string): Promise<void> {
+    const userCollectionEntries = Array.from(this.collections.entries()).filter(
+      ([_, collection]) => collection.userId === userId
+    );
+    
+    for (const [id, _] of userCollectionEntries) {
+      this.collections.delete(id);
+    }
   }
 }
 
