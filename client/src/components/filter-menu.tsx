@@ -105,34 +105,34 @@ export default function FilterMenu({ onFiltersChange, currentFilters }: FilterMe
         </Button>
       </SheetTrigger>
       
-      <SheetContent className="w-80 bg-slate-900 border-slate-700 overflow-y-auto">
-        <SheetHeader className="space-y-3 pb-6">
+      <SheetContent className="w-full sm:w-80 bg-slate-900 border-slate-700 overflow-y-auto">
+        <SheetHeader className="space-y-4 pb-8">
           <div className="flex items-center justify-between">
-            <SheetTitle className="text-2xl font-bold text-gradient-primary">
+            <SheetTitle className="text-xl sm:text-2xl font-bold text-gradient-primary">
               Advanced Filters
             </SheetTitle>
           </div>
-          <SheetDescription className="text-slate-400">
+          <SheetDescription className="text-slate-400 text-base">
             Refine your search with precision
           </SheetDescription>
           <div className="w-12 h-0.5 bg-gradient-primary rounded-full"></div>
         </SheetHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Mana Cost Filter */}
-          <div className="space-y-4">
-            <Label className="block text-sm font-semibold text-white flex items-center space-x-2">
+          <div className="space-y-5">
+            <Label className="block text-base font-semibold text-white flex items-center space-x-2">
               <span className="w-2 h-2 bg-gradient-gold rounded-full"></span>
               <span>Mana Cost Range</span>
             </Label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div className="relative">
                 <Input
                   type="number"
                   placeholder="Min"
                   value={minCmc || ""}
                   onChange={(e) => setMinCmc(e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="bg-slate-800 border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="bg-slate-800 border-slate-600 rounded-lg px-4 py-3 text-white text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 h-12"
                   data-testid="input-min-cmc"
                 />
               </div>
@@ -142,7 +142,7 @@ export default function FilterMenu({ onFiltersChange, currentFilters }: FilterMe
                   placeholder="Max"
                   value={maxCmc || ""}
                   onChange={(e) => setMaxCmc(e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="bg-slate-800 border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="bg-slate-800 border-slate-600 rounded-lg px-4 py-3 text-white text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 h-12"
                   data-testid="input-max-cmc"
                 />
               </div>
@@ -150,18 +150,18 @@ export default function FilterMenu({ onFiltersChange, currentFilters }: FilterMe
           </div>
 
           {/* Color Identity */}
-          <div className="space-y-4">
-            <Label className="block text-sm font-semibold text-white flex items-center space-x-2">
+          <div className="space-y-5">
+            <Label className="block text-base font-semibold text-white flex items-center space-x-2">
               <span className="w-2 h-2 bg-gradient-accent rounded-full"></span>
               <span>Color Identity</span>
             </Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {colors.map((color) => (
                 <Button
                   key={color.symbol}
                   type="button"
                   onClick={() => handleColorToggle(color.symbol)}
-                  className={`relative p-3 rounded-lg text-sm font-bold transition-all duration-300 hover:scale-105 ${
+                  className={`relative h-12 rounded-lg text-base font-bold transition-all duration-300 hover:scale-105 touch-manipulation ${
                     selectedColors.includes(color.symbol)
                       ? `${color.color} opacity-100 shadow-lg`
                       : `${color.color} opacity-60 hover:opacity-90`
@@ -178,18 +178,18 @@ export default function FilterMenu({ onFiltersChange, currentFilters }: FilterMe
           </div>
 
           {/* Card Type */}
-          <div className="space-y-3">
-            <Label className="block text-sm font-medium text-slate-300">Card Type</Label>
+          <div className="space-y-4">
+            <Label className="block text-base font-medium text-slate-300">Card Type</Label>
             <Select value={selectedType} onValueChange={setSelectedType}>
               <SelectTrigger 
-                className="w-full bg-slate-800 border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full h-12 bg-slate-800 border-slate-600 rounded-lg px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-amber-500"
                 data-testid="select-card-type"
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-600">
                 {cardTypes.map((type) => (
-                  <SelectItem key={type} value={type} className="text-white hover:bg-slate-700">
+                  <SelectItem key={type} value={type} className="text-white hover:bg-slate-700 py-3 text-base">
                     {type}
                   </SelectItem>
                 ))}
@@ -198,18 +198,18 @@ export default function FilterMenu({ onFiltersChange, currentFilters }: FilterMe
           </div>
 
           {/* Set Selection */}
-          <div className="space-y-3">
-            <Label className="block text-sm font-medium text-slate-300">Set</Label>
+          <div className="space-y-4">
+            <Label className="block text-base font-medium text-slate-300">Set</Label>
             <Select value={selectedSet} onValueChange={setSelectedSet}>
               <SelectTrigger 
-                className="w-full bg-slate-800 border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full h-12 bg-slate-800 border-slate-600 rounded-lg px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-amber-500"
                 data-testid="select-set"
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-600">
                 {sets.map((set) => (
-                  <SelectItem key={set} value={set} className="text-white hover:bg-slate-700">
+                  <SelectItem key={set} value={set} className="text-white hover:bg-slate-700 py-3 text-base">
                     {set}
                   </SelectItem>
                 ))}
@@ -218,19 +218,19 @@ export default function FilterMenu({ onFiltersChange, currentFilters }: FilterMe
           </div>
 
           {/* Rarity */}
-          <div className="space-y-3">
-            <Label className="block text-sm font-medium text-slate-300">Rarity</Label>
-            <div className="space-y-3">
+          <div className="space-y-4">
+            <Label className="block text-base font-medium text-slate-300">Rarity</Label>
+            <div className="space-y-4">
               {rarities.map((rarity) => (
-                <div key={rarity} className="flex items-center space-x-3">
+                <div key={rarity} className="flex items-center space-x-4">
                   <Checkbox
                     id={rarity}
                     checked={selectedRarities.includes(rarity)}
                     onCheckedChange={() => handleRarityToggle(rarity)}
-                    className="rounded border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500 focus:ring-offset-0"
+                    className="rounded border-slate-600 bg-slate-800 text-amber-500 focus:ring-amber-500 focus:ring-offset-0 h-5 w-5"
                     data-testid={`checkbox-rarity-${rarity}`}
                   />
-                  <Label htmlFor={rarity} className="text-sm text-slate-300 capitalize cursor-pointer">
+                  <Label htmlFor={rarity} className="text-base text-slate-300 capitalize cursor-pointer flex-1 py-1">
                     {rarity}
                   </Label>
                 </div>
@@ -239,23 +239,23 @@ export default function FilterMenu({ onFiltersChange, currentFilters }: FilterMe
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-3 pt-4">
+          <div className="space-y-4 pt-6">
             <Button
               onClick={applyFilters}
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
+              className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-base rounded-lg transition-all duration-300 hover:scale-105 shadow-lg touch-manipulation"
               data-testid="button-search"
             >
-              <Search className="w-4 h-4 mr-2" />
+              <Search className="w-5 h-5 mr-2" />
               Apply Filters
             </Button>
 
             <Button
               onClick={clearFilters}
               variant="outline"
-              className="w-full bg-slate-800 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 font-semibold py-3 rounded-lg transition-all duration-300 hover:scale-105"
+              className="w-full h-12 bg-slate-800 border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 font-semibold text-base rounded-lg transition-all duration-300 hover:scale-105 touch-manipulation"
               data-testid="button-clear-filters"
             >
-              <X className="w-4 h-4 mr-2" />
+              <X className="w-5 h-5 mr-2" />
               Clear All
             </Button>
           </div>

@@ -97,51 +97,52 @@ export default function Home() {
             </div>
 
             {/* Enhanced User Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 lg:space-x-3">
               <Link href="/rules">
                 <Button 
-                  className="relative bg-gradient-gold hover:shadow-glow text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
+                  className="relative bg-gradient-gold hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
                   data-testid="button-rules"
                 >
-                  <Book className="mr-2 h-4 w-4" />
+                  <Book className="mr-1 lg:mr-2 h-4 w-4" />
                   Rules
                   <div className="absolute inset-0 bg-gradient-gold rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
               </Link>
               <Link href="/dictionary">
                 <Button 
-                  className="relative bg-purple-600 hover:shadow-glow text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
+                  className="relative bg-purple-600 hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
                   data-testid="button-dictionary"
                 >
-                  <BookOpen className="mr-2 h-4 w-4" />
+                  <BookOpen className="mr-1 lg:mr-2 h-4 w-4" />
                   Dictionary
                   <div className="absolute inset-0 bg-purple-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
               </Link>
               <Button 
                 onClick={() => setShowDeckBuilderModal(true)}
-                className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow"
+                className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm lg:text-base touch-manipulation"
                 data-testid="button-deck-builder"
               >
-                <Wand2 className="mr-2 h-4 w-4" />
-                AI Builder
+                <Wand2 className="mr-1 lg:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">AI Builder</span>
+                <span className="sm:hidden">AI</span>
                 <div className="absolute inset-0 bg-mtg-primary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
               </Button>
               <Button 
                 onClick={() => setShowCollectionModal(true)}
-                className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
+                className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
                 data-testid="button-collection"
               >
-                <Bookmark className="mr-2 h-4 w-4" />
+                <Bookmark className="mr-1 lg:mr-2 h-4 w-4" />
                 Collection
                 <div className="absolute inset-0 bg-mtg-accent rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
               </Button>
               <Link href="/profile">
                 <Button 
-                  className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass"
+                  className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass text-sm lg:text-base touch-manipulation"
                   data-testid="button-profile"
                 >
-                  <User className="mr-2 h-4 w-4" />
+                  <User className="mr-1 lg:mr-2 h-4 w-4" />
                   Profile
                   <div className="absolute inset-0 bg-mtg-secondary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
@@ -185,43 +186,43 @@ export default function Home() {
             </div>
 
             {/* Third Row - Action Buttons */}
-            <div className="flex items-center justify-center space-x-2 pb-3">
+            <div className="flex items-center justify-center space-x-2 pb-4">
               <Link href="/rules">
                 <Button 
                   size="sm"
-                  className="relative bg-gradient-gold hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-xs"
+                  className="relative bg-gradient-gold hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
                   data-testid="button-rules-mobile"
                 >
-                  <Book className="mr-1 h-3 w-3" />
+                  <Book className="mr-1.5 h-4 w-4" />
                   Rules
                 </Button>
               </Link>
               <Link href="/dictionary">
                 <Button 
                   size="sm"
-                  className="relative bg-purple-600 hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-xs"
+                  className="relative bg-purple-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
                   data-testid="button-dictionary-mobile"
                 >
-                  <BookOpen className="mr-1 h-3 w-3" />
+                  <BookOpen className="mr-1.5 h-4 w-4" />
                   Dictionary
                 </Button>
               </Link>
               <Button 
                 size="sm"
                 onClick={() => setShowDeckBuilderModal(true)}
-                className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-xs"
+                className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm touch-manipulation"
                 data-testid="button-deck-builder-mobile"
               >
-                <Wand2 className="mr-1 h-3 w-3" />
+                <Wand2 className="mr-1.5 h-4 w-4" />
                 AI Builder
               </Button>
               <Button 
                 size="sm"
                 onClick={() => setShowCollectionModal(true)}
-                className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-xs"
+                className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
                 data-testid="button-collection-mobile"
               >
-                <Bookmark className="mr-1 h-3 w-3" />
+                <Bookmark className="mr-1.5 h-4 w-4" />
                 Collection
               </Button>
             </div>
