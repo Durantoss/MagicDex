@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCollectionSchema } from "@shared/schema";
+import { insertCollectionSchema, insertWishlistSchema, insertTradingProfileSchema, insertTradeInterestSchema } from "@shared/schema";
 import { z } from "zod";
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -309,6 +309,223 @@ Please provide a helpful answer that explains the rule clearly and concisely. If
         error: "Failed to get rules answer",
         message: "The AI service encountered an error. Please try again."
       });
+    }
+  });
+
+  // === TRADING ENDPOINTS ===
+
+  // Get user wishlist
+  app.get("/api/wishlist", async (req, res) => {
+    try {
+      const wishlist = await storage.getUserWishlist(DEMO_USER_ID);
+      res.json(wishlist);
+    } catch (error) {
+      console.error("Get wishlist error:", error);
+      res.status(500).json({ error: "Failed to get wishlist" });
+    }
+  });
+
+  // Add card to wishlist
+  app.post("/api/wishlist", async (req, res) => {
+    try {
+      const validatedData = insertWishlistSchema.parse({
+        ...req.body,
+        userId: DEMO_USER_ID,
+      });
+
+      // Check if card already exists in wishlist
+      const existing = await storage.getWishlistItem(DEMO_USER_ID, validatedData.cardId);
+      
+      if (existing) {
+        // Update quantity
+        const updated = await storage.updateWishlistQuantity(
+          DEMO_USER_ID, 
+          validatedData.cardId, 
+          existing.quantity + (validatedData.quantity || 1)
+        );
+        res.json(updated);
+      } else {
+        // Add new card to wishlist
+        const wishlist = await storage.addToWishlist(validatedData);
+        res.json(wishlist);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      console.error("Add to wishlist error:", error);
+      res.status(500).json({ error: "Failed to add card to wishlist" });
+    }
+  });
+
+  // Remove card from wishlist
+  app.delete("/api/wishlist/:cardId", async (req, res) => {
+    try {
+      const { cardId } = req.params;
+      const success = await storage.removeFromWishlist(DEMO_USER_ID, cardId);
+      
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: "Card not found in wishlist" });
+      }
+    } catch (error) {
+      console.error("Remove from wishlist error:", error);
+      res.status(500).json({ error: "Failed to remove card from wishlist" });
+    }
+  });
+
+  // Update wishlist card quantity
+  app.patch("/api/wishlist/:cardId", async (req, res) => {
+    try {
+      const { cardId } = req.params;
+      const { quantity } = req.body;
+      
+      if (!quantity || quantity < 0) {
+        return res.status(400).json({ error: "Invalid quantity" });
+      }
+
+      const updated = await storage.updateWishlistQuantity(DEMO_USER_ID, cardId, quantity);
+      
+      if (updated) {
+        res.json(updated);
+      } else {
+        res.status(404).json({ error: "Card not found in wishlist" });
+      }
+    } catch (error) {
+      console.error("Update wishlist error:", error);
+      res.status(500).json({ error: "Failed to update wishlist" });
+    }
+  });
+
+  // Get user trading profile
+  app.get("/api/trading/profile", async (req, res) => {
+    try {
+      const profile = await storage.getTradingProfile(DEMO_USER_ID);
+      res.json(profile);
+    } catch (error) {
+      console.error("Get trading profile error:", error);
+      res.status(500).json({ error: "Failed to get trading profile" });
+    }
+  });
+
+  // Create or update trading profile
+  app.post("/api/trading/profile", async (req, res) => {
+    try {
+      const existing = await storage.getTradingProfile(DEMO_USER_ID);
+      
+      if (existing) {
+        // Update existing profile
+        const validatedData = insertTradingProfileSchema.partial().parse(req.body);
+        const updated = await storage.updateTradingProfile(DEMO_USER_ID, validatedData);
+        res.json(updated);
+      } else {
+        // Create new profile
+        const validatedData = insertTradingProfileSchema.parse({
+          ...req.body,
+          userId: DEMO_USER_ID,
+        });
+        const profile = await storage.createTradingProfile(validatedData);
+        res.json(profile);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      console.error("Create/update trading profile error:", error);
+      res.status(500).json({ error: "Failed to save trading profile" });
+    }
+  });
+
+  // Find trade matches
+  app.get("/api/trading/matches", async (req, res) => {
+    try {
+      const matches = await storage.findTradeMatches(DEMO_USER_ID);
+      res.json(matches);
+    } catch (error) {
+      console.error("Find trade matches error:", error);
+      res.status(500).json({ error: "Failed to find trade matches" });
+    }
+  });
+
+  // Create trade interest
+  app.post("/api/trading/interests", async (req, res) => {
+    try {
+      const validatedData = insertTradeInterestSchema.parse({
+        ...req.body,
+        fromUserId: DEMO_USER_ID,
+      });
+
+      const tradeInterest = await storage.createTradeInterest(validatedData);
+      res.json(tradeInterest);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      console.error("Create trade interest error:", error);
+      res.status(500).json({ error: "Failed to create trade interest" });
+    }
+  });
+
+  // Get user's trade interests
+  app.get("/api/trading/interests", async (req, res) => {
+    try {
+      const interests = await storage.getUserTradeInterests(DEMO_USER_ID);
+      res.json(interests);
+    } catch (error) {
+      console.error("Get trade interests error:", error);
+      res.status(500).json({ error: "Failed to get trade interests" });
+    }
+  });
+
+  // Update trade interest status
+  app.patch("/api/trading/interests/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      if (!status || !["pending", "accepted", "declined", "completed"].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+
+      const updated = await storage.updateTradeInterestStatus(id, status);
+      
+      if (updated) {
+        res.json(updated);
+      } else {
+        res.status(404).json({ error: "Trade interest not found" });
+      }
+    } catch (error) {
+      console.error("Update trade interest error:", error);
+      res.status(500).json({ error: "Failed to update trade interest" });
+    }
+  });
+
+  // Get card pricing/valuation from Scryfall
+  app.get("/api/cards/:id/pricing", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const response = await fetch(`https://api.scryfall.com/cards/${id}`);
+      
+      if (!response.ok) {
+        return res.status(404).json({ error: "Card not found" });
+      }
+
+      const card = await response.json();
+      
+      // Extract pricing information
+      const pricing = {
+        cardId: id,
+        name: card.name,
+        prices: card.prices || {},
+        purchase_uris: card.purchase_uris || {},
+        last_updated: new Date().toISOString()
+      };
+      
+      res.json(pricing);
+    } catch (error) {
+      console.error("Get card pricing error:", error);
+      res.status(500).json({ error: "Failed to get card pricing" });
     }
   });
 
