@@ -316,6 +316,37 @@ export default function Home() {
             </div>
           )}
         </main>
+
+        {/* Legal Disclaimer */}
+        <footer className="mt-16 border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                <div className="w-8 h-0.5 bg-gradient-primary"></div>
+                <span className="text-slate-400 font-medium text-sm">DISCLAIMER</span>
+                <div className="w-8 h-0.5 bg-gradient-primary"></div>
+              </div>
+              
+              <div className="max-w-4xl mx-auto space-y-3 text-slate-400 text-sm leading-relaxed">
+                <p>
+                  <strong className="text-slate-300">For Informational Purposes Only:</strong> This application is designed for educational and informational purposes only. It is not affiliated with, endorsed by, or sponsored by Wizards of the Coast LLC.
+                </p>
+                
+                <p>
+                  <strong className="text-slate-300">Intellectual Property Rights:</strong> Magic: The Gathering, MTG, all card names, artwork, set names, symbols, and other intellectual property are the exclusive property of Wizards of the Coast LLC. All rights reserved.
+                </p>
+                
+                <p>
+                  <strong className="text-slate-300">Data Sources:</strong> Card data and images are provided by Scryfall API and other publicly available sources. This application does not claim ownership of any MTG-related content.
+                </p>
+                
+                <p className="text-xs text-slate-500 pt-2 border-t border-slate-700/30">
+                  If you are a rights holder and have concerns about content displayed here, please contact us for immediate resolution.
+                </p>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
 
       {/* Modals */}
