@@ -24,10 +24,16 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     const value = e.target.value;
     setQuery(value);
     
-    // Auto-search as user types (debounced in real implementation)
-    if (value.trim().length > 2) {
+    // Auto-search as user types (with minimum 3 characters)
+    if (value.trim().length >= 3) {
       onSearch({
         query: value.trim(),
+        sort: "name",
+      });
+    } else if (value.trim().length === 0) {
+      // Clear results when search is empty
+      onSearch({
+        query: "",
         sort: "name",
       });
     }
@@ -54,15 +60,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         {/* Magical Border Effect */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-primary opacity-0 group-hover:opacity-10 group-focus-within:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
         
-        {/* Search Suggestions Hint */}
-        {query.length === 0 && (
-          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-            <div className="flex items-center space-x-2 text-xs text-slate-500">
-              <span className="bg-glass px-2 py-1 rounded-full border border-glass">⌘K</span>
-              <span>Quick search</span>
-            </div>
-          </div>
-        )}
         
         {/* Active Search Indicator */}
         {query.length > 0 && (
