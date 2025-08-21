@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Search } from "lucide-react";
 import { SearchFilters } from "@/types/scryfall";
 
 interface FilterSidebarProps {
@@ -214,9 +215,10 @@ export default function FilterSidebar({ onFiltersChange, currentFilters }: Filte
           <Button
             onClick={applyFilters}
             className="w-full bg-mtg-primary hover:shadow-magical text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-card animate-glow"
-            data-testid="button-apply-filters"
+            data-testid="button-search"
           >
-            Apply Filters
+            <Search className="w-5 h-5 mr-2" />
+            Search
           </Button>
 
           <Button
