@@ -56,6 +56,7 @@ export default function FilterSidebar({ onFiltersChange, currentFilters }: Filte
   const applyFilters = () => {
     const filters: SearchFilters = {
       ...currentFilters,
+      query: currentFilters.query || "*", // Default to wildcard search if no query
       minCmc,
       maxCmc,
       colors: selectedColors.length > 0 ? selectedColors : undefined,

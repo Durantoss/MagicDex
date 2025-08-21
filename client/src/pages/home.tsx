@@ -25,11 +25,9 @@ export default function Home() {
   const { data: searchResults, isLoading, error } = useQuery({
     queryKey: ["/api/cards/search", filters, currentPage],
     queryFn: async () => {
-      if (!filters.query) return null;
-      
       // Construct query parameters
       const params = new URLSearchParams({
-        q: filters.query,
+        q: filters.query || "*",
         page: currentPage.toString(),
       });
       
@@ -43,10 +41,13 @@ export default function Home() {
       if (filters.rarity?.length) params.append('rarity', filters.rarity.join(','));
       
       const response = await fetch(`/api/cards/search?${params.toString()}`);
-      if (!response.ok) throw new Error('Search failed');
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.statusText}`);
+      }
+      
       return response.json();
     },
-    enabled: filters.query.length > 0,
+    enabled: !!filters.query && filters.query.length > 0,
   });
 
   const handleSearch = (newFilters: SearchFilters) => {
@@ -201,6 +202,7 @@ export default function Home() {
               </div>
             </div>
           )}
+
           
 
           {searchResults && searchResults.data.length > 0 && (
