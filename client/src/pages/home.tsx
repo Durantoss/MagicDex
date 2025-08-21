@@ -8,7 +8,7 @@ import CollectionModal from "@/components/collection-modal";
 import DeckBuilderModal from "@/components/deck-builder-modal";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
-import { Bookmark, User, Wand2, Book } from "lucide-react";
+import { Bookmark, User, Wand2, Book, BookOpen } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
@@ -109,6 +109,16 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-gold rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
               </Link>
+              <Link href="/dictionary">
+                <Button 
+                  className="relative bg-purple-600 hover:shadow-glow text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
+                  data-testid="button-dictionary"
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Dictionary
+                  <div className="absolute inset-0 bg-purple-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                </Button>
+              </Link>
               <Button 
                 onClick={() => setShowDeckBuilderModal(true)}
                 className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow"
@@ -185,6 +195,16 @@ export default function Home() {
                 >
                   <Book className="mr-1 h-3 w-3" />
                   Rules
+                </Button>
+              </Link>
+              <Link href="/dictionary">
+                <Button 
+                  size="sm"
+                  className="relative bg-purple-600 hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-xs"
+                  data-testid="button-dictionary-mobile"
+                >
+                  <BookOpen className="mr-1 h-3 w-3" />
+                  Dictionary
                 </Button>
               </Link>
               <Button 
