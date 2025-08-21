@@ -251,6 +251,79 @@ Format your response as JSON with this structure:
     }
   });
 
+  // Bulk add cards from sets to collection
+  app.post("/api/collection/bulk-add-set", async (req, res) => {
+    try {
+      const { setCode, quantity = 1 } = req.body;
+      
+      if (!setCode) {
+        return res.status(400).json({ error: "Set code is required" });
+      }
+
+      // Search for all cards in the set using Scryfall API
+      const scryfallUrl = new URL("https://api.scryfall.com/cards/search");
+      scryfallUrl.searchParams.set("q", `set:${setCode}`);
+      scryfallUrl.searchParams.set("unique", "cards");
+      
+      const response = await fetch(scryfallUrl.toString());
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          return res.status(404).json({ error: "Set not found" });
+        }
+        throw new Error(`Scryfall API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const cards = data.data || [];
+      
+      let addedCount = 0;
+      let updatedCount = 0;
+
+      // Add each card to collection
+      for (const card of cards) {
+        try {
+          // Check if card already exists in collection
+          const existing = await storage.getCollectionItem(DEMO_USER_ID, card.id);
+          
+          if (existing) {
+            // Update quantity
+            await storage.updateCollectionQuantity(
+              DEMO_USER_ID, 
+              card.id, 
+              existing.quantity + quantity
+            );
+            updatedCount++;
+          } else {
+            // Add new card
+            await storage.addToCollection({
+              userId: DEMO_USER_ID,
+              cardId: card.id,
+              quantity,
+              cardData: card
+            });
+            addedCount++;
+          }
+        } catch (error) {
+          console.error(`Error adding card ${card.name}:`, error);
+        }
+      }
+
+      res.json({
+        success: true,
+        setCode,
+        totalCards: cards.length,
+        addedCount,
+        updatedCount,
+        message: `Added ${addedCount} new cards and updated ${updatedCount} existing cards from ${setCode} set`
+      });
+      
+    } catch (error) {
+      console.error("Bulk add set error:", error);
+      res.status(500).json({ error: "Failed to add cards from set" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
