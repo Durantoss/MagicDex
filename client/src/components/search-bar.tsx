@@ -2,13 +2,15 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { SearchFilters } from "@/types/scryfall";
+import FilterMenu from "./filter-menu";
 
 interface SearchBarProps {
   onSearch: (filters: SearchFilters) => void;
+  currentFilters?: SearchFilters;
 }
 
-export default function SearchBar({ onSearch }: SearchBarProps) {
-  const [query, setQuery] = useState("");
+export default function SearchBar({ onSearch, currentFilters = { query: "", sort: "name" } }: SearchBarProps) {
+  const [query, setQuery] = useState(currentFilters.query || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +50,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           value={query}
           onChange={handleInputChange}
           placeholder="Search for magic cards, spells, creatures..."
-          className="w-full h-12 sm:h-14 bg-glass border-glass rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 pl-12 sm:pl-14 text-white text-base sm:text-lg placeholder-slate-400 transition-all duration-300 focus:outline-none focus:shadow-magical focus:scale-[1.02] sm:focus:scale-105 hover:shadow-card backdrop-blur-md touch-manipulation"
+          className="w-full h-12 sm:h-14 bg-glass border-glass rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 pl-12 sm:pl-14 pr-16 sm:pr-20 text-white text-base sm:text-lg placeholder-slate-400 transition-all duration-300 focus:outline-none focus:shadow-magical focus:scale-[1.02] sm:focus:scale-105 hover:shadow-card backdrop-blur-md touch-manipulation"
           data-testid="input-search"
           autoComplete="off"
           autoCapitalize="off"
@@ -65,12 +67,14 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         <div className="absolute inset-0 rounded-2xl bg-gradient-primary opacity-0 group-hover:opacity-10 group-focus-within:opacity-20 transition-opacity duration-300 pointer-events-none"></div>
         
         
-        {/* Active Search Indicator */}
-        {query.length > 0 && (
-          <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2">
+        {/* Filter Menu Button */}
+        <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+          <FilterMenu onFiltersChange={onSearch} currentFilters={currentFilters} />
+          {/* Active Search Indicator */}
+          {query.length > 0 && (
             <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-gradient-accent rounded-full animate-pulse"></div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </form>
   );

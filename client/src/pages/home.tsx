@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import SearchBar from "@/components/search-bar";
-import FilterSidebar from "@/components/filter-sidebar";
 import CardGrid from "@/components/card-grid";
 import CardDetailModal from "@/components/card-detail-modal";
 import CollectionModal from "@/components/collection-modal";
@@ -92,7 +91,7 @@ export default function Home() {
             {/* Enhanced Main Search Bar */}
             <div className="flex-1 max-w-3xl mx-12">
               <div className="relative">
-                <SearchBar onSearch={handleSearch} />
+                <SearchBar onSearch={handleSearch} currentFilters={filters} />
                 <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-20 blur-sm animate-pulse pointer-events-none"></div>
               </div>
             </div>
@@ -180,7 +179,7 @@ export default function Home() {
             {/* Second Row - Search Bar */}
             <div className="pb-3">
               <div className="relative">
-                <SearchBar onSearch={handleSearch} />
+                <SearchBar onSearch={handleSearch} currentFilters={filters} />
                 <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-20 blur-sm animate-pulse pointer-events-none"></div>
               </div>
             </div>
@@ -230,12 +229,9 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex min-h-screen">
-        {/* Filter Sidebar */}
-        <FilterSidebar onFiltersChange={handleSearch} currentFilters={filters} />
-
+      <div className="min-h-screen">
         {/* Enhanced Main Content */}
-        <main className="flex-1 p-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Enhanced Search Results Header */}
           <div className="relative mb-8">
             <div className="flex items-center justify-between">
@@ -286,7 +282,7 @@ export default function Home() {
                   Search for Magic: The Gathering Cards
                 </h3>
                 <p className="text-slate-400" data-testid="text-search-instructions">
-                  Use the search bar above or apply filters and click Search to find cards
+                  Use the search bar above or tap the filter button to find cards
                 </p>
               </div>
             </div>
