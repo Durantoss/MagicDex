@@ -5,12 +5,16 @@ import CardGrid from "@/components/card-grid";
 import CardDetailModal from "@/components/card-detail-modal";
 import CollectionModal from "@/components/collection-modal";
 import DeckBuilderModal from "@/components/deck-builder-modal";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
-import { Bookmark, User, Wand2, Book, BookOpen } from "lucide-react";
+import { Bookmark, User, Wand2, Book, BookOpen, LogIn, LogOut } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
+import { scryfallApi } from "@/lib/api";
 
 export default function Home() {
+  const { user, loading: authLoading, signOut } = useAuth();
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
     sort: "name",
@@ -20,34 +24,19 @@ export default function Home() {
   const [showCardModal, setShowCardModal] = useState(false);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const [showDeckBuilderModal, setShowDeckBuilderModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const { data: searchResults, isLoading, error } = useQuery({
-    queryKey: ["/api/cards/search", filters, currentPage],
+    queryKey: ["cards/search", filters, currentPage],
     queryFn: async () => {
-      // Construct query parameters
-      const params = new URLSearchParams({
-        q: filters.query || "*",
-        page: currentPage.toString(),
-      });
-      
-      // Add filters to query
-      if (filters.sort) params.append('sort', filters.sort);
-      if (filters.minCmc) params.append('minCmc', filters.minCmc.toString());
-      if (filters.maxCmc) params.append('maxCmc', filters.maxCmc.toString());
-      if (filters.colors?.length) params.append('colors', filters.colors.join(','));
-      if (filters.type && filters.type !== 'All Types') params.append('type', filters.type);
-      if (filters.set && filters.set !== 'All Sets') params.append('set', filters.set);
-      if (filters.rarity?.length) params.append('rarity', filters.rarity.join(','));
-      
-      const response = await fetch(`/api/cards/search?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error(`Search failed: ${response.statusText}`);
-      }
-      
-      return response.json();
+      return await scryfallApi.searchCards(filters.query || "*", currentPage);
     },
     enabled: !!filters.query && filters.query.length > 0,
   });
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   const handleSearch = (newFilters: SearchFilters) => {
     setFilters(newFilters);
@@ -118,35 +107,59 @@ export default function Home() {
                   <div className="absolute inset-0 bg-purple-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
               </Link>
-              <Button 
-                onClick={() => setShowDeckBuilderModal(true)}
-                className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm lg:text-base touch-manipulation"
-                data-testid="button-deck-builder"
-              >
-                <Wand2 className="mr-1 lg:mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">AI Builder</span>
-                <span className="sm:hidden">AI</span>
-                <div className="absolute inset-0 bg-mtg-primary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
-              </Button>
-              <Button 
-                onClick={() => setShowCollectionModal(true)}
-                className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
-                data-testid="button-collection"
-              >
-                <Bookmark className="mr-1 lg:mr-2 h-4 w-4" />
-                Collection
-                <div className="absolute inset-0 bg-mtg-accent rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
-              </Button>
-              <Link href="/profile">
+              
+              {user ? (
+                <>
+                  <Button 
+                    onClick={() => setShowDeckBuilderModal(true)}
+                    className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm lg:text-base touch-manipulation"
+                    data-testid="button-deck-builder"
+                  >
+                    <Wand2 className="mr-1 lg:mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">AI Builder</span>
+                    <span className="sm:hidden">AI</span>
+                    <div className="absolute inset-0 bg-mtg-primary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                  </Button>
+                  <Button 
+                    onClick={() => setShowCollectionModal(true)}
+                    className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
+                    data-testid="button-collection"
+                  >
+                    <Bookmark className="mr-1 lg:mr-2 h-4 w-4" />
+                    Collection
+                    <div className="absolute inset-0 bg-mtg-accent rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                  </Button>
+                  <Link href="/profile">
+                    <Button 
+                      className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass text-sm lg:text-base touch-manipulation"
+                      data-testid="button-profile"
+                    >
+                      <User className="mr-1 lg:mr-2 h-4 w-4" />
+                      Profile
+                      <div className="absolute inset-0 bg-mtg-secondary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                    </Button>
+                  </Link>
+                  <Button 
+                    onClick={handleSignOut}
+                    className="relative bg-red-600 hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
+                    data-testid="button-signout"
+                  >
+                    <LogOut className="mr-1 lg:mr-2 h-4 w-4" />
+                    Sign Out
+                    <div className="absolute inset-0 bg-red-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                  </Button>
+                </>
+              ) : (
                 <Button 
-                  className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass text-sm lg:text-base touch-manipulation"
-                  data-testid="button-profile"
+                  onClick={() => setShowAuthModal(true)}
+                  className="relative bg-green-600 hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
+                  data-testid="button-signin"
                 >
-                  <User className="mr-1 lg:mr-2 h-4 w-4" />
-                  Profile
-                  <div className="absolute inset-0 bg-mtg-secondary rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                  <LogIn className="mr-1 lg:mr-2 h-4 w-4" />
+                  Sign In
+                  <div className="absolute inset-0 bg-green-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
-              </Link>
+              )}
             </div>
           </div>
 
@@ -166,15 +179,36 @@ export default function Home() {
                 </div>
               </div>
               
-              <Link href="/profile">
+              {user ? (
+                <div className="flex items-center space-x-2">
+                  <Link href="/profile">
+                    <Button 
+                      size="sm"
+                      className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass"
+                      data-testid="button-profile-mobile"
+                    >
+                      <User className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Button 
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="relative bg-red-600 hover:shadow-glow text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
+                    data-testid="button-signout-mobile"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
                 <Button 
                   size="sm"
-                  className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass"
-                  data-testid="button-profile-mobile"
+                  onClick={() => setShowAuthModal(true)}
+                  className="relative bg-green-600 hover:shadow-glow text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
+                  data-testid="button-signin-mobile"
                 >
-                  <User className="h-4 w-4" />
+                  <LogIn className="h-4 w-4" />
                 </Button>
-              </Link>
+              )}
             </div>
 
             {/* Second Row - Search Bar */}
@@ -207,24 +241,28 @@ export default function Home() {
                   Dictionary
                 </Button>
               </Link>
-              <Button 
-                size="sm"
-                onClick={() => setShowDeckBuilderModal(true)}
-                className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm touch-manipulation"
-                data-testid="button-deck-builder-mobile"
-              >
-                <Wand2 className="mr-1.5 h-4 w-4" />
-                AI Builder
-              </Button>
-              <Button 
-                size="sm"
-                onClick={() => setShowCollectionModal(true)}
-                className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
-                data-testid="button-collection-mobile"
-              >
-                <Bookmark className="mr-1.5 h-4 w-4" />
-                Collection
-              </Button>
+              {user && (
+                <>
+                  <Button 
+                    size="sm"
+                    onClick={() => setShowDeckBuilderModal(true)}
+                    className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm touch-manipulation"
+                    data-testid="button-deck-builder-mobile"
+                  >
+                    <Wand2 className="mr-1.5 h-4 w-4" />
+                    AI Builder
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={() => setShowCollectionModal(true)}
+                    className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                    data-testid="button-collection-mobile"
+                  >
+                    <Bookmark className="mr-1.5 h-4 w-4" />
+                    Collection
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -371,9 +409,16 @@ export default function Home() {
         />
       )}
 
-      {showDeckBuilderModal && (
+      {showDeckBuilderModal && user && (
         <DeckBuilderModal
           onClose={() => setShowDeckBuilderModal(false)}
+        />
+      )}
+
+      {showAuthModal && (
+        <AuthModal
+          open={showAuthModal}
+          onOpenChange={setShowAuthModal}
         />
       )}
     </div>

@@ -1,0 +1,554 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Card Database - Search & Collect Magic Cards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mtg-primary': '#6366f1',
+                        'mtg-secondary': '#1e293b',
+                        'mtg-accent': '#10b981',
+                        'mtg-dark': '#0f172a',
+                        'mtg-gray': '#334155'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-mtg-dark text-slate-100 font-sans">
+    
+    <!-- @COMPONENT: Header -->
+    <header class="bg-mtg-secondary border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-magic text-mtg-primary text-2xl"></i>
+                        <h1 class="text-xl font-bold text-white">MTG Database</h1>
+                    </div>
+                </div>
+
+                <!-- Main Search Bar -->
+                <div class="flex-1 max-w-2xl mx-8">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            placeholder="Search cards by name, text, or type..." 
+                            class="w-full bg-mtg-gray text-white placeholder-slate-400 border border-slate-600 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-mtg-primary focus:border-transparent"
+                            data-mock="true"
+                            data-implementation="Should implement autocomplete with Scryfall API"
+                        >
+                        <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                    </div>
+                </div>
+
+                <!-- User Actions -->
+                <div class="flex items-center space-x-4">
+                    <button class="bg-mtg-accent hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors duration-200" data-event="click:openCollection">
+                        <i class="fas fa-bookmark mr-2"></i>My Collection
+                    </button>
+                    <button class="bg-mtg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-user mr-2"></i>Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <div class="flex min-h-screen">
+        
+        <!-- @COMPONENT: FilterSidebar -->
+        <aside class="w-80 bg-mtg-secondary border-r border-slate-700 p-6 overflow-y-auto">
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Advanced Filters</h3>
+                </div>
+
+                <!-- Mana Cost Filter -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Mana Cost</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" placeholder="Min" class="bg-mtg-gray border border-slate-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-mtg-primary">
+                        <input type="number" placeholder="Max" class="bg-mtg-gray border border-slate-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-mtg-primary">
+                    </div>
+                </div>
+
+                <!-- Color Identity -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Color Identity</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="bg-red-600 hover:bg-red-700 text-white p-2 rounded text-sm transition-colors" data-mock="true">W</button>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-sm transition-colors" data-mock="true">U</button>
+                        <button class="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded text-sm transition-colors" data-mock="true">B</button>
+                        <button class="bg-red-700 hover:bg-red-800 text-white p-2 rounded text-sm transition-colors" data-mock="true">R</button>
+                        <button class="bg-green-600 hover:bg-green-700 text-white p-2 rounded text-sm transition-colors" data-mock="true">G</button>
+                        <button class="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded text-sm transition-colors" data-mock="true">C</button>
+                    </div>
+                </div>
+
+                <!-- Card Type -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Card Type</label>
+                    <select class="w-full bg-mtg-gray border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-mtg-primary">
+                        <option data-mock="true">All Types</option>
+                        <option data-mock="true">Creature</option>
+                        <option data-mock="true">Instant</option>
+                        <option data-mock="true">Sorcery</option>
+                        <option data-mock="true">Artifact</option>
+                        <option data-mock="true">Enchantment</option>
+                        <option data-mock="true">Planeswalker</option>
+                        <option data-mock="true">Land</option>
+                    </select>
+                </div>
+
+                <!-- Set Selection -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Set</label>
+                    <select class="w-full bg-mtg-gray border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-mtg-primary">
+                        <option data-mock="true">All Sets</option>
+                        <option data-mock="true">March of the Machine</option>
+                        <option data-mock="true">Phyrexia: All Will Be One</option>
+                        <option data-mock="true">The Brothers' War</option>
+                        <option data-mock="true">Dominaria United</option>
+                    </select>
+                </div>
+
+                <!-- Rarity -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-slate-300">Rarity</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-slate-600 bg-mtg-gray text-mtg-primary focus:ring-mtg-primary focus:ring-offset-0" data-mock="true">
+                            <span class="ml-2 text-sm text-slate-300">Common</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-slate-600 bg-mtg-gray text-mtg-primary focus:ring-mtg-primary focus:ring-offset-0" data-mock="true">
+                            <span class="ml-2 text-sm text-slate-300">Uncommon</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-slate-600 bg-mtg-gray text-mtg-primary focus:ring-mtg-primary focus:ring-offset-0" data-mock="true">
+                            <span class="ml-2 text-sm text-slate-300">Rare</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-slate-600 bg-mtg-gray text-mtg-primary focus:ring-mtg-primary focus:ring-offset-0" data-mock="true">
+                            <span class="ml-2 text-sm text-slate-300">Mythic</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Apply Filters Button -->
+                <button class="w-full bg-mtg-primary hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors duration-200" data-event="click:applyFilters">
+                    Apply Filters
+                </button>
+
+                <!-- Clear Filters -->
+                <button class="w-full bg-slate-600 hover:bg-slate-500 text-white py-2 px-4 rounded-lg transition-colors duration-200" data-event="click:clearFilters">
+                    Clear All
+                </button>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: FilterSidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <main class="flex-1 p-6">
+            <!-- Search Results Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Search Results</h2>
+                    <p class="text-slate-400" data-bind="searchResults.total">Showing 1,247 cards</p>
+                </div>
+                
+                <!-- Sort Options -->
+                <div class="flex items-center space-x-4">
+                    <label class="text-sm text-slate-300">Sort by:</label>
+                    <select class="bg-mtg-gray border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-mtg-primary">
+                        <option data-mock="true">Name (A-Z)</option>
+                        <option data-mock="true">Mana Cost</option>
+                        <option data-mock="true">Set</option>
+                        <option data-mock="true">Rarity</option>
+                        <option data-mock="true">Price</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- @MAP: searchResults.map(card => ( -->
+            <!-- Card Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8">
+                
+                <!-- Card Item 1 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail" data-bind="card.id">
+                    <!-- A mystical lightning bolt spell with electric blue energy crackling through dark storm clouds -->
+                    <img src="https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=560" alt="Lightning Bolt card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-bind="card.name">Lightning Bolt</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-bind="card.type">Instant</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-red-600 text-white px-2 py-1 rounded" data-bind="card.manaCost">R</span>
+                            <button class="text-mtg-accent hover:text-emerald-400 transition-colors" data-event="click:addToCollection" data-implementation="Should prevent event bubbling">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Item 2 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail">
+                    <!-- A majestic blue dragon soaring through cloudy skies with wings spread wide -->
+                    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=560" alt="Azure Drake card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-mock="true">Azure Drake</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-mock="true">Creature - Drake</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded" data-mock="true">3U</span>
+                            <button class="text-mtg-accent hover:text-emerald-400 transition-colors" data-event="click:addToCollection">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Item 3 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail">
+                    <!-- A dark forest path with twisted trees and glowing magical runes carved into bark -->
+                    <img src="https://pixabay.com/get/g08364f56bb36e473d4478aa6f0f03cca72ffde978d2885935a725be2469f50e228f8acdd0a865fda30c8817ffaf6267f6f32312405837fc5a2ed01efc68e73a0_1280.jpg" alt="Dark Forest card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-mock="true">Dark Ritual</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-mock="true">Instant</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-gray-800 text-white px-2 py-1 rounded" data-mock="true">B</span>
+                            <button class="text-green-500 hover:text-green-400 transition-colors" data-event="click:removeFromCollection" data-implementation="Card already in collection">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Item 4 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail">
+                    <!-- A golden sunrise over mountain peaks with warm light illuminating the landscape -->
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=560" alt="Mountain Plains card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-mock="true">Sacred Foundry</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-mock="true">Land - Mountain Plains</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-gray-600 text-white px-2 py-1 rounded" data-mock="true">Land</span>
+                            <button class="text-mtg-accent hover:text-emerald-400 transition-colors" data-event="click:addToCollection">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Item 5 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail">
+                    <!-- A mystical wizard in robes casting a spell with glowing hands and magical energy swirling around -->
+                    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=560" alt="Wizard Sage card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-mock="true">Merfolk Looter</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-mock="true">Creature - Merfolk Rogue</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded" data-mock="true">1U</span>
+                            <button class="text-mtg-accent hover:text-emerald-400 transition-colors" data-event="click:addToCollection">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Item 6 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail">
+                    <!-- A fierce red dragon breathing fire with scales glowing like hot coals -->
+                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=560" alt="Fire Dragon card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-mock="true">Shivan Dragon</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-mock="true">Creature - Dragon</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-red-600 text-white px-2 py-1 rounded" data-mock="true">4RR</span>
+                            <button class="text-mtg-accent hover:text-emerald-400 transition-colors" data-event="click:addToCollection">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Item 7 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail">
+                    <!-- A lush green forest with ancient trees and magical light filtering through leaves -->
+                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=560" alt="Forest Elf card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-mock="true">Llanowar Elves</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-mock="true">Creature - Elf Druid</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-green-600 text-white px-2 py-1 rounded" data-mock="true">G</span>
+                            <button class="text-green-500 hover:text-green-400 transition-colors" data-event="click:removeFromCollection">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Item 8 -->
+                <div class="bg-mtg-secondary rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group" data-event="click:openCardDetail">
+                    <!-- A mystical artifact glowing with ancient power and intricate mechanical details -->
+                    <img src="https://pixabay.com/get/g40d8ab41f310fbd75f8a9698f5e3d567a59f3255aae13b2574ac0fb61a0ac65638a59c2c474c8c3e49e188517c692f5d30975678338b78eb060bd8b0a1a97d64_1280.jpg" alt="Ancient Artifact card" class="w-full h-80 object-cover group-hover:brightness-110 transition-all duration-300" data-mock-image="true">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-white mb-1" data-mock="true">Sol Ring</h3>
+                        <p class="text-sm text-slate-400 mb-2" data-mock="true">Artifact</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-gray-600 text-white px-2 py-1 rounded" data-mock="true">1</span>
+                            <button class="text-mtg-accent hover:text-emerald-400 transition-colors" data-event="click:addToCollection">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- @END_MAP )) -->
+
+            <!-- Pagination -->
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-slate-400">
+                    Showing 1-20 of 1,247 results
+                </div>
+                <nav class="flex items-center space-x-2">
+                    <button class="px-3 py-2 text-sm text-slate-400 hover:text-white transition-colors" data-event="click:previousPage">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <button class="px-3 py-2 text-sm bg-mtg-primary text-white rounded" data-mock="true">1</button>
+                    <button class="px-3 py-2 text-sm text-slate-400 hover:text-white transition-colors" data-mock="true">2</button>
+                    <button class="px-3 py-2 text-sm text-slate-400 hover:text-white transition-colors" data-mock="true">3</button>
+                    <span class="px-2 text-slate-400">...</span>
+                    <button class="px-3 py-2 text-sm text-slate-400 hover:text-white transition-colors" data-mock="true">63</button>
+                    <button class="px-3 py-2 text-sm text-slate-400 hover:text-white transition-colors" data-event="click:nextPage">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </nav>
+            </div>
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+
+    <!-- @COMPONENT: CardDetailModal -->
+    <!-- Card Detail Modal (Hidden by default) -->
+    <div id="cardModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" data-event="click:closeModal">
+        <div class="bg-mtg-secondary rounded-lg max-w-4xl max-h-screen overflow-y-auto m-4" data-event="click:preventClose" data-implementation="Prevent modal close when clicking inside">
+            <div class="flex flex-col lg:flex-row">
+                <!-- Card Image -->
+                <div class="lg:w-1/2 p-6">
+                    <!-- A detailed close-up of a lightning bolt spell card with intricate artwork and magical effects -->
+                    <img src="https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=840" alt="Lightning Bolt detailed view" class="w-full rounded-lg shadow-lg" data-mock-image="true" data-bind="selectedCard.imageUrl">
+                </div>
+                
+                <!-- Card Details -->
+                <div class="lg:w-1/2 p-6 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-3xl font-bold text-white" data-bind="selectedCard.name">Lightning Bolt</h2>
+                        <button class="text-slate-400 hover:text-white transition-colors" data-event="click:closeModal">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Mana Cost</label>
+                            <span class="inline-block bg-red-600 text-white px-3 py-1 rounded text-lg" data-bind="selectedCard.manaCost">R</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Type</label>
+                            <p class="text-white" data-bind="selectedCard.typeLine">Instant</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Oracle Text</label>
+                            <p class="text-white bg-mtg-gray p-3 rounded" data-bind="selectedCard.oracleText" data-mock="true">Lightning Bolt deals 3 damage to any target.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-1">Set</label>
+                                <p class="text-white" data-bind="selectedCard.setName" data-mock="true">Alpha</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-1">Rarity</label>
+                                <p class="text-white" data-bind="selectedCard.rarity" data-mock="true">Common</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Artist</label>
+                            <p class="text-white" data-bind="selectedCard.artist" data-mock="true">Christopher Rush</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Market Price</label>
+                            <p class="text-green-400 text-xl font-semibold" data-bind="selectedCard.price" data-mock="true">$2.50</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-3 pt-4 border-t border-slate-600">
+                        <button class="flex-1 bg-mtg-accent hover:bg-emerald-600 text-white py-3 px-4 rounded-lg transition-colors duration-200" data-event="click:addToCollection">
+                            <i class="fas fa-plus mr-2"></i>Add to Collection
+                        </button>
+                        <button class="flex-1 bg-mtg-primary hover:bg-indigo-600 text-white py-3 px-4 rounded-lg transition-colors duration-200" data-event="click:addToWishlist">
+                            <i class="fas fa-heart mr-2"></i>Add to Wishlist
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CardDetailModal -->
+
+    <!-- @COMPONENT: CollectionModal -->
+    <!-- Collection Modal (Hidden by default) -->
+    <div id="collectionModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" data-event="click:closeCollectionModal">
+        <div class="bg-mtg-secondary rounded-lg max-w-6xl max-h-screen overflow-y-auto m-4 w-full" data-event="click:preventClose">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-white">My Collection</h2>
+                    <button class="text-slate-400 hover:text-white transition-colors" data-event="click:closeCollectionModal">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Collection Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-mtg-gray p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-1">Total Cards</h3>
+                        <p class="text-2xl font-bold text-mtg-accent" data-bind="collection.totalCards" data-mock="true">247</p>
+                    </div>
+                    <div class="bg-mtg-gray p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-1">Unique Cards</h3>
+                        <p class="text-2xl font-bold text-blue-400" data-bind="collection.uniqueCards" data-mock="true">189</p>
+                    </div>
+                    <div class="bg-mtg-gray p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-1">Total Value</h3>
+                        <p class="text-2xl font-bold text-green-400" data-bind="collection.totalValue" data-mock="true">$1,420</p>
+                    </div>
+                    <div class="bg-mtg-gray p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-1">Completion</h3>
+                        <p class="text-2xl font-bold text-purple-400" data-bind="collection.completion" data-mock="true">12.3%</p>
+                    </div>
+                </div>
+                
+                <!-- Collection Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <!-- Collection Item 1 -->
+                    <div class="bg-mtg-gray rounded-lg p-3 hover:bg-slate-600 transition-colors cursor-pointer" data-event="click:viewCollectionCard">
+                        <!-- A mystical lightning bolt spell in collection view -->
+                        <img src="https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=280" alt="Lightning Bolt in collection" class="w-full h-32 object-cover rounded mb-2" data-mock-image="true">
+                        <h4 class="font-semibold text-white text-sm mb-1" data-mock="true">Lightning Bolt</h4>
+                        <p class="text-xs text-slate-400 mb-1" data-mock="true">Qty: 4</p>
+                        <p class="text-xs text-green-400" data-mock="true">$10.00</p>
+                    </div>
+                    
+                    <!-- Collection Item 2 -->
+                    <div class="bg-mtg-gray rounded-lg p-3 hover:bg-slate-600 transition-colors cursor-pointer" data-event="click:viewCollectionCard">
+                        <!-- A dark forest ritual spell in collection view -->
+                        <img src="https://pixabay.com/get/gc835c766883c859c87447a5222d9f63bd2b7927368b76c3fdede9981c05ce7ea79bbcc93bc60c6862e2e962a4b028f2ec0434c1005ad6e8ead9e248209f4ad9e_1280.jpg" alt="Dark Ritual in collection" class="w-full h-32 object-cover rounded mb-2" data-mock-image="true">
+                        <h4 class="font-semibold text-white text-sm mb-1" data-mock="true">Dark Ritual</h4>
+                        <p class="text-xs text-slate-400 mb-1" data-mock="true">Qty: 2</p>
+                        <p class="text-xs text-green-400" data-mock="true">$15.00</p>
+                    </div>
+                    
+                    <!-- Collection Item 3 -->
+                    <div class="bg-mtg-gray rounded-lg p-3 hover:bg-slate-600 transition-colors cursor-pointer" data-event="click:viewCollectionCard">
+                        <!-- Forest elves in collection view -->
+                        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=280" alt="Llanowar Elves in collection" class="w-full h-32 object-cover rounded mb-2" data-mock-image="true">
+                        <h4 class="font-semibold text-white text-sm mb-1" data-mock="true">Llanowar Elves</h4>
+                        <p class="text-xs text-slate-400 mb-1" data-mock="true">Qty: 3</p>
+                        <p class="text-xs text-green-400" data-mock="true">$6.00</p>
+                    </div>
+                    
+                    <!-- Add more collection items as needed -->
+                </div>
+                
+                <!-- Collection Actions -->
+                <div class="flex space-x-3 mt-6 pt-4 border-t border-slate-600">
+                    <button class="bg-mtg-primary hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors duration-200" data-event="click:exportCollection">
+                        <i class="fas fa-download mr-2"></i>Export Collection
+                    </button>
+                    <button class="bg-mtg-accent hover:bg-emerald-600 text-white py-2 px-4 rounded-lg transition-colors duration-200" data-event="click:shareCollection">
+                        <i class="fas fa-share mr-2"></i>Share Collection
+                    </button>
+                    <button class="bg-slate-600 hover:bg-slate-500 text-white py-2 px-4 rounded-lg transition-colors duration-200" data-event="click:printCollection">
+                        <i class="fas fa-print mr-2"></i>Print List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CollectionModal -->
+
+    <!-- @STATE: cardModalOpen:boolean = false -->
+    <!-- @STATE: collectionModalOpen:boolean = false -->
+    <!-- @STATE: searchQuery:string = "" -->
+    <!-- @STATE: selectedCard:object = null -->
+    <!-- @STATE: searchResults:array = [] -->
+    <!-- @STATE: userCollection:array = [] -->
+
+    <script>
+        // TODO: Implement modal functionality, search logic, collection management
+        // TODO: Integrate with Scryfall API for real card data
+        // TODO: Implement user authentication and collection persistence
+        // TODO: Add card image optimization and lazy loading
+        // TODO: Implement search suggestions and autocomplete
+        
+        (function() {
+            // Basic modal functionality for demo purposes
+            const cardModal = document.getElementById('cardModal');
+            const collectionModal = document.getElementById('collectionModal');
+            
+            // Demo card click handlers
+            document.querySelectorAll('[data-event*="openCardDetail"]').forEach(card => {
+                card.addEventListener('click', () => {
+                    if (cardModal) {
+                        cardModal.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            // Demo collection modal handlers
+            document.querySelectorAll('[data-event*="openCollection"]').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (collectionModal) {
+                        collectionModal.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            // Close modal handlers
+            document.querySelectorAll('[data-event*="closeModal"], [data-event*="closeCollectionModal"]').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget || e.target.closest('[data-event*="close"]')) {
+                        cardModal?.classList.add('hidden');
+                        collectionModal?.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Prevent modal close when clicking inside content
+            document.querySelectorAll('[data-event*="preventClose"]').forEach(element => {
+                element.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
