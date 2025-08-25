@@ -138,6 +138,19 @@ export const supabase = {
       console.warn(`Function '${functionName}' attempted but Supabase unavailable`)
       return { data: null, error: { message: 'Function unavailable in mock mode' } }
     }
+  },
+
+  rpc: async (functionName: string, params?: any) => {
+    if (supabaseClient) {
+      try {
+        return await supabaseClient.rpc(functionName, params)
+      } catch (error) {
+        console.warn(`Supabase RPC '${functionName}' failed:`, error)
+        return { data: null, error: { message: 'RPC unavailable in mock mode' } }
+      }
+    }
+    console.warn(`RPC '${functionName}' attempted but Supabase unavailable`)
+    return { data: null, error: { message: 'RPC unavailable in mock mode' } }
   }
 }
 

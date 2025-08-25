@@ -8,7 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import CardDetailModal from "./card-detail-modal";
-import { searchCards } from "@/lib/scryfall-api";
+import { searchCards, searchLilianaOfTheVeil } from "@/lib/scryfall-api";
+import { QuickAddButtons, FoilToggle } from "./quantity-tracker";
+import { FoilBadge, FoilAvailabilityIndicator } from "./foil-badge";
+import { checkFoilAvailability, shouldShowFoilOptions } from "@/lib/foil-utils";
 
 interface CardScannerModalProps {
   open: boolean;
@@ -37,6 +40,8 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
   const [scanProgress, setScanProgress] = useState<string>("");
   const [manualSearchText, setManualSearchText] = useState<string>("");
   const [isManualSearching, setIsManualSearching] = useState(false);
+  const [foilMode, setFoilMode] = useState(false);
+  const [selectedQuantities, setSelectedQuantities] = useState<{[cardId: string]: {normal: number, foil: number}}>({});
 
   // Initialize camera when modal opens
   useEffect(() => {
@@ -406,7 +411,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     }
   };
 
-  const handleAddCard = async (card: any) => {
+  const handleAddCard = async (card: any, finish: 'normal' | 'foil' = 'normal', quantity: number = 1) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -417,36 +422,29 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     }
 
     try {
-      // Add card to user's collection via Supabase
-      const { error } = await supabase
-        .from('user_cards')
-        .insert({
-          user_id: user.id,
-          scryfall_id: card.id,
-          card_name: card.name,
-          set_code: card.set,
-          set_name: card.set_name,
-          rarity: card.rarity,
-          mana_cost: card.mana_cost,
-          type_line: card.type_line,
-          oracle_text: card.oracle_text,
-          power: card.power,
-          toughness: card.toughness,
+      // Use the new upsert function for foil support
+      const { error } = await supabase.rpc('upsert_collection_entry', {
+        p_user_id: user.id,
+        p_card_id: card.id,
+        p_normal_quantity: finish === 'normal' ? quantity : 0,
+        p_foil_quantity: finish === 'foil' ? quantity : 0,
+        p_card_data: {
+          ...card,
           image_url: card.image_uris?.normal || card.image_uris?.large,
-          price_usd: card.prices?.usd ? parseFloat(card.prices.usd) : null,
-          quantity: 1
-        });
+        }
+      });
 
       if (error) {
         throw error;
       }
       
+      const finishText = finish === 'foil' ? ' (Foil)' : '';
       toast({
         title: "Card added to collection!",
-        description: `${card.name} has been added to your collection.`,
+        description: `${quantity}x ${card.name}${finishText} has been added to your collection.`,
       });
 
-      console.log("Card successfully added to collection:", card.name);
+      console.log(`Card successfully added to collection: ${quantity}x ${card.name} (${finish})`);
 
     } catch (err) {
       console.error("Error adding card to collection:", err);
@@ -456,6 +454,27 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
         variant: "destructive",
       });
     }
+  };
+
+  const handleQuickAdd = (card: any, finish: 'normal' | 'foil', quantity: number) => {
+    handleAddCard(card, finish, quantity);
+  };
+
+  const getCardQuantities = (cardId: string) => {
+    return selectedQuantities[cardId] || { normal: 0, foil: 0 };
+  };
+
+  const updateCardQuantities = (cardId: string, finish: 'normal' | 'foil', change: number) => {
+    setSelectedQuantities(prev => {
+      const current = prev[cardId] || { normal: 0, foil: 0 };
+      const updated = { ...current };
+      updated[finish] = Math.max(0, updated[finish] + change);
+      
+      return {
+        ...prev,
+        [cardId]: updated
+      };
+    });
   };
 
   const handleCardClick = (card: any) => {
@@ -618,7 +637,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
               <h4 className="text-sm font-semibold text-slate-300">Manual Search</h4>
               <span className="text-xs text-slate-500">(Use if OCR fails)</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-3">
               <Input
                 placeholder="Enter card name manually..."
                 value={manualSearchText}
@@ -649,7 +668,39 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
                 )}
               </Button>
             </div>
-            <p className="text-xs text-slate-500 mt-2">
+            
+            {/* Quick search for Liliana of the Veil */}
+            <div className="flex gap-2 mb-3">
+              <Button
+                onClick={async () => {
+                  setIsManualSearching(true);
+                  try {
+                    const results = await searchLilianaOfTheVeil();
+                    setSearchResults(results);
+                    toast({
+                      title: "Search completed",
+                      description: `Found ${results.length} printings of Liliana of the Veil`,
+                    });
+                  } catch (error) {
+                    toast({
+                      title: "Search failed",
+                      description: "Could not search for Liliana of the Veil",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setIsManualSearching(false);
+                  }
+                }}
+                disabled={isManualSearching}
+                className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
+                size="sm"
+              >
+                <Search className="mr-1 h-3 w-3" />
+                Liliana of the Veil
+              </Button>
+            </div>
+            
+            <p className="text-xs text-slate-500">
               If the OCR produces garbled text, manually type the card name here for accurate results.
             </p>
           </div>
@@ -696,13 +747,16 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
                   Found {searchResults.length} potential matches
                 </h4>
               </div>
-              <div className="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto">
                 {searchResults.map((card) => (
                   <div
                     key={card.id}
-                    className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors"
+                    className="relative flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors"
                     onClick={() => handleCardClick(card)}
                   >
+                    {/* Foil badge if card has foil availability */}
+                    <FoilBadge card={card} size="sm" />
+                    
                     <img
                       src={card.image_uris?.small || "https://via.placeholder.com/63x88/1e293b/ffffff?text=No+Image"}
                       alt={card.name}
@@ -712,11 +766,24 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
                       <p className="font-medium text-white truncate">{card.name}</p>
                       <p className="text-xs text-slate-400 truncate">{card.set_name}</p>
                       <p className="text-xs text-slate-500">{card.type_line}</p>
-                      {card.prices?.usd && (
-                        <p className="text-xs text-green-400">${card.prices.usd}</p>
-                      )}
+                      
+                      {/* Price display with foil info */}
+                      <div className="flex items-center gap-2 mt-1">
+                        {card.prices?.usd && (
+                          <span className="text-xs text-green-400">${card.prices.usd}</span>
+                        )}
+                        {card.prices?.usd_foil && (
+                          <span className="text-xs text-yellow-400">
+                            Foil: ${card.prices.usd_foil}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Foil availability indicator */}
+                      <FoilAvailabilityIndicator card={card} size="sm" />
                     </div>
-                    <div className="flex flex-col gap-1">
+                    
+                    <div className="flex flex-col gap-2">
                       <Button
                         size="sm"
                         variant="outline"
@@ -729,17 +796,33 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
                         <Eye className="h-3 w-3 mr-1" />
                         View
                       </Button>
-                      <Button
-                        size="sm"
-                        className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddCard(card);
-                        }}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        Add
-                      </Button>
+                      
+                      {/* Quick add buttons for normal and foil */}
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          className="h-7 px-2 bg-green-600 hover:bg-green-700 text-white text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleQuickAdd(card, 'normal', 1);
+                          }}
+                        >
+                          +1N
+                        </Button>
+                        
+                        {shouldShowFoilOptions(card) && (
+                          <Button
+                            size="sm"
+                            className="h-7 px-2 bg-yellow-600 hover:bg-yellow-700 text-white text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuickAdd(card, 'foil', 1);
+                            }}
+                          >
+                            +1F
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

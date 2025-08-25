@@ -1,330 +1,327 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(210 25% 7.8431%);
-  --card: hsl(180 6.6667% 97.0588%);
-  --card-foreground: hsl(210 25% 7.8431%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(210 25% 7.8431%);
-  --primary: hsl(203.8863 88.2845% 53.1373%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(210 25% 7.8431%);
-  --secondary-foreground: hsl(0 0% 100%);
-  --muted: hsl(240 1.9608% 90%);
-  --muted-foreground: hsl(210 25% 7.8431%);
-  --accent: hsl(211.5789 51.3514% 92.7451%);
-  --accent-foreground: hsl(203.8863 88.2845% 53.1373%);
-  --destructive: hsl(356.3033 90.5579% 54.3137%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(201.4286 30.4348% 90.9804%);
-  --input: hsl(200 23.0769% 97.4510%);
-  --ring: hsl(202.8169 89.1213% 53.1373%);
-  --chart-1: hsl(203.8863 88.2845% 53.1373%);
-  --chart-2: hsl(159.7826 100% 36.0784%);
-  --chart-3: hsl(42.0290 92.8251% 56.2745%);
-  --chart-4: hsl(147.1429 78.5047% 41.9608%);
-  --chart-5: hsl(341.4894 75.2000% 50.9804%);
-  --sidebar: hsl(180 6.6667% 97.0588%);
-  --sidebar-foreground: hsl(210 25% 7.8431%);
-  --sidebar-primary: hsl(203.8863 88.2845% 53.1373%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(211.5789 51.3514% 92.7451%);
-  --sidebar-accent-foreground: hsl(203.8863 88.2845% 53.1373%);
-  --sidebar-border: hsl(205.0000 25.0000% 90.5882%);
-  --sidebar-ring: hsl(202.8169 89.1213% 53.1373%);
-  --font-sans: Inter, system-ui, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: 1.3rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-  
-  /* MTG Theme Colors - Enhanced */
-  --mtg-primary: hsl(243 75% 59%);
-  --mtg-primary-light: hsl(243 75% 69%);
-  --mtg-primary-dark: hsl(243 75% 49%);
-  --mtg-secondary: hsl(215 28% 17%);
-  --mtg-secondary-light: hsl(215 28% 27%);
-  --mtg-accent: hsl(158 64% 52%);
-  --mtg-accent-light: hsl(158 64% 62%);
-  --mtg-dark: hsl(217 33% 8%);
-  --mtg-gray: hsl(215 20% 28%);
-  --mtg-gold: hsl(45 100% 55%);
-  --mtg-silver: hsl(210 20% 75%);
-  --mtg-bronze: hsl(30 65% 55%);
-  
-  /* Magical Gradients */
-  --gradient-primary: linear-gradient(135deg, hsl(243 75% 59%), hsl(280 65% 65%));
-  --gradient-secondary: linear-gradient(135deg, hsl(215 28% 17%), hsl(215 28% 27%));
-  --gradient-accent: linear-gradient(135deg, hsl(158 64% 52%), hsl(175 70% 55%));
-  --gradient-dark: linear-gradient(135deg, hsl(217 33% 8%), hsl(230 35% 12%));
-  --gradient-gold: linear-gradient(135deg, hsl(45 100% 55%), hsl(35 90% 60%));
-  
-  /* Card Rarity Colors */
-  --rarity-common: hsl(210 10% 70%);
-  --rarity-uncommon: hsl(210 50% 75%);
-  --rarity-rare: hsl(45 100% 65%);
-  --rarity-mythic: hsl(15 90% 65%);
-  
-  /* Enhanced Shadows */
-  --shadow-magical: 0 0 20px rgba(123, 97, 255, 0.3), 0 0 40px rgba(123, 97, 255, 0.1);
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  --shadow-card-hover: 0 8px 40px rgba(123, 97, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
-  --shadow-glow: 0 0 30px rgba(123, 97, 255, 0.5);
-  
-  /* Glass morphism */
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-backdrop: blur(10px);
-}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
 
-.dark {
-  --background: hsl(0 0% 0%);
-  --foreground: hsl(200 6.6667% 91.1765%);
-  --card: hsl(228 9.8039% 10%);
-  --card-foreground: hsl(0 0% 85.0980%);
-  --popover: hsl(0 0% 0%);
-  --popover-foreground: hsl(200 6.6667% 91.1765%);
-  --primary: hsl(203.7736 87.6033% 52.5490%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(195.0000 15.3846% 94.9020%);
-  --secondary-foreground: hsl(210 25% 7.8431%);
-  --muted: hsl(0 0% 9.4118%);
-  --muted-foreground: hsl(210 3.3898% 46.2745%);
-  --accent: hsl(205.7143 70% 7.8431%);
-  --accent-foreground: hsl(203.7736 87.6033% 52.5490%);
-  --destructive: hsl(356.3033 90.5579% 54.3137%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(210 5.2632% 14.9020%);
-  --input: hsl(207.6923 27.6596% 18.4314%);
-  --ring: hsl(202.8169 89.1213% 53.1373%);
-  --chart-1: hsl(203.8863 88.2845% 53.1373%);
-  --chart-2: hsl(159.7826 100% 36.0784%);
-  --chart-3: hsl(42.0290 92.8251% 56.2745%);
-  --chart-4: hsl(147.1429 78.5047% 41.9608%);
-  --chart-5: hsl(341.4894 75.2000% 50.9804%);
-  --sidebar: hsl(228 9.8039% 10%);
-  --sidebar-foreground: hsl(0 0% 85.0980%);
-  --sidebar-primary: hsl(202.8169 89.1213% 53.1373%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(205.7143 70% 7.8431%);
-  --sidebar-accent-foreground: hsl(203.7736 87.6033% 52.5490%);
-  --sidebar-border: hsl(205.7143 15.7895% 26.0784%);
-  --sidebar-ring: hsl(202.8169 89.1213% 53.1373%);
-  --font-sans: Inter, system-ui, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: 1.3rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
-    @apply font-sans antialiased;
-    background: var(--gradient-dark);
-    background-attachment: fixed;
-    color: hsl(200 6.6667% 91.1765%);
-    font-family: var(--font-sans);
-    overflow-x: hidden;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
-    font-weight: 600;
-    letter-spacing: -0.025em;
-  }
-  
-  code, pre {
-    font-family: 'JetBrains Mono', monospace;
+    @apply bg-background text-foreground;
   }
 }
 
-@layer utilities {
-  /* Background Utilities */
-  .bg-mtg-primary {
-    background: var(--gradient-primary);
-  }
-  
-  .bg-mtg-secondary {
-    background: var(--gradient-secondary);
-  }
-  
-  .bg-mtg-accent {
-    background: var(--gradient-accent);
-  }
-  
-  .bg-mtg-dark {
-    background: var(--gradient-dark);
-  }
-  
-  .bg-mtg-gray {
-    background-color: var(--mtg-gray);
-  }
-  
-  .bg-glass {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-backdrop);
-    border: 1px solid var(--glass-border);
-  }
-  
-  /* Text Colors */
-  .text-mtg-primary {
-    color: var(--mtg-primary);
-  }
-  
-  .text-mtg-accent {
-    color: var(--mtg-accent);
-  }
-  
-  .text-gradient-primary {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .text-gradient-accent {
-    background: var(--gradient-accent);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .text-gradient-gold {
-    background: var(--gradient-gold);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  /* Border Utilities */
-  .border-mtg-gray {
-    border-color: var(--mtg-gray);
-  }
-  
-  .border-glass {
-    border: 1px solid var(--glass-border);
-  }
-  
-  /* Shadow Utilities */
-  .shadow-magical {
-    box-shadow: var(--shadow-magical);
-  }
-  
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
-  
-  .shadow-card-hover {
-    box-shadow: var(--shadow-card-hover);
-  }
-  
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
-  
-  /* Hover Effects */
-  .hover\:bg-mtg-primary:hover {
-    background: linear-gradient(135deg, hsl(243 75% 64%), hsl(280 65% 70%));
-  }
-  
-  .hover\:bg-mtg-accent:hover {
-    background: linear-gradient(135deg, hsl(158 64% 57%), hsl(175 70% 60%));
-  }
-  
-  .hover\:shadow-magical:hover {
-    box-shadow: var(--shadow-magical);
-  }
-  
-  .hover\:shadow-card-hover:hover {
-    box-shadow: var(--shadow-card-hover);
-  }
-  
-  /* Animation Classes */
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-  
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-  
-  .animate-shimmer {
-    animation: shimmer 2s linear infinite;
-  }
+/* MTG Theme Colors */
+:root {
+  --mtg-primary: #1a1a2e;
+  --mtg-secondary: #16213e;
+  --mtg-accent: #e94560;
+  --mtg-dark: #0f0f23;
+  --mtg-gray: #2a2a3e;
+  --glass: rgba(255, 255, 255, 0.1);
 }
 
-/* Custom Animations */
-@keyframes glow {
-  from {
-    box-shadow: 0 0 20px rgba(123, 97, 255, 0.3);
-  }
-  to {
-    box-shadow: 0 0 30px rgba(123, 97, 255, 0.6);
-  }
+.bg-mtg-primary { background-color: var(--mtg-primary); }
+.bg-mtg-secondary { background-color: var(--mtg-secondary); }
+.bg-mtg-accent { background-color: var(--mtg-accent); }
+.bg-mtg-dark { background-color: var(--mtg-dark); }
+.bg-mtg-gray { background-color: var(--mtg-gray); }
+.bg-glass { background-color: var(--glass); }
+.border-glass { border-color: var(--glass); }
+.hover\:bg-glass:hover { background-color: var(--glass); }
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, #e94560, #f39c12);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+/* Foil Badge Styling */
+.foil-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(45deg, #fcd34d, #fbbf24);
+  color: #1f2937;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 0 6px rgba(252, 211, 77, 0.6);
+  font-size: 0.75rem;
+  z-index: 10;
 }
 
-@keyframes shimmer {
+/* Foil Toggle Styling */
+.foil-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.foil-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #fbbf24;
+}
+
+/* Quantity Tracker Styling */
+.quantity-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quantity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quantity-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.quantity-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-display {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+  color: white;
+}
+
+.finish-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  min-width: 60px;
+}
+
+.finish-label.foil {
+  color: #fbbf24;
+}
+
+.price-display {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Card hover effects for foil cards */
+.card-foil {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-foil::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(252, 211, 77, 0.1) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg);
+  transition: transform 0.6s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-foil:hover::before {
+  transform: rotate(45deg) translate(50%, 50%);
+}
+
+/* Foil shimmer animation */
+@keyframes foil-shimmer {
   0% {
-    background-position: -200px 0;
+    transform: translateX(-100%) rotate(45deg);
   }
   100% {
-    background-position: 200px 0;
+    transform: translateX(100%) rotate(45deg);
   }
 }
 
-.shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  background-size: 200px 100%;
-  animation: shimmer 2s infinite;
+.foil-shimmer {
+  position: relative;
+  overflow: hidden;
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
+.foil-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(252, 211, 77, 0.3) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%) rotate(45deg);
+  animation: foil-shimmer 2s infinite;
+  pointer-events: none;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--mtg-dark);
+/* Collection stats styling */
+.collection-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--gradient-primary);
-  border-radius: 4px;
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gradient-accent);
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stat-foil {
+  color: #fbbf24;
+}
+
+/* Filter enhancements for foil */
+.filter-section {
+  margin-bottom: 16px;
+}
+
+.filter-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.filter-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #e94560;
+}
+
+.filter-option:hover {
+  color: white;
 }

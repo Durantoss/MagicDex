@@ -12,6 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { wishlistApi } from "@/lib/api";
 import { useState } from "react";
+import { QuantityTracker } from "./quantity-tracker";
+import { FoilBadge, FoilAvailabilityIndicator, PriceComparison } from "./foil-badge";
+import { checkFoilAvailability, shouldShowFoilOptions, CardQuantities } from "@/lib/foil-utils";
+import { supabase } from "@/lib/supabase";
 
 interface CardDetailModalProps {
   card: ScryfallCard;
@@ -25,6 +29,7 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
   const [selectedVariation, setSelectedVariation] = useState<any>(card);
   const [selectedFinish, setSelectedFinish] = useState<'normal' | 'foil'>('normal');
   const [quantity, setQuantity] = useState(1);
+  const [quantities, setQuantities] = useState<CardQuantities>({ normal: 1, foil: 0 });
 
   // Get user collection
   const { data: collection = [] } = useQuery({
@@ -47,29 +52,41 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
 
   const groupedVariations = groupVariationsBySet(variations);
 
-  // Add to collection mutation
+  // Add to collection mutation with foil support
   const addToCollectionMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/collection", {
-        cardId: selectedVariation.id,
-        quantity: quantity,
-        finish: selectedFinish,
-        cardData: {
+      if (!user) throw new Error("User not authenticated");
+      
+      const { data, error } = await supabase.rpc('upsert_collection_entry', {
+        p_user_id: user.id,
+        p_card_id: selectedVariation.id,
+        p_normal_quantity: quantities.normal,
+        p_foil_quantity: quantities.foil,
+        p_card_data: {
           ...selectedVariation,
-          finish: selectedFinish,
-          quantity: quantity
-        },
+          image_url: selectedVariation.image_uris?.normal || selectedVariation.image_uris?.large,
+        }
       });
-      return response.json();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/collection"] });
+      const totalQuantity = quantities.normal + quantities.foil;
+      const description = quantities.normal > 0 && quantities.foil > 0 
+        ? `Added ${quantities.normal} normal + ${quantities.foil} foil copies of ${selectedVariation.name} to your collection.`
+        : quantities.foil > 0
+        ? `Added ${quantities.foil} foil copies of ${selectedVariation.name} to your collection.`
+        : `Added ${quantities.normal} copies of ${selectedVariation.name} to your collection.`;
+      
       toast({
         title: "Added to Collection",
-        description: `Added ${quantity}x ${selectedVariation.name} (${selectedFinish}) to your collection.`,
+        description,
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Collection add error:", error);
       toast({
         title: "Error",
         description: "Failed to add card to collection.",
@@ -78,29 +95,42 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     },
   });
 
-  // Add to wishlist mutation
+  // Add to wishlist mutation with foil support
   const addToWishlistMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("User not authenticated");
-      return await wishlistApi.addToWishlist({
-        userId: user.id,
-        cardId: selectedVariation.id,
-        quantity: quantity,
-        cardData: {
+      
+      const { data, error } = await supabase.rpc('upsert_wishlist_entry', {
+        p_user_id: user.id,
+        p_card_id: selectedVariation.id,
+        p_normal_quantity: quantities.normal,
+        p_foil_quantity: quantities.foil,
+        p_priority: 'medium',
+        p_card_data: {
           ...selectedVariation,
-          finish: selectedFinish,
-          quantity: quantity
-        } as any,
+          image_url: selectedVariation.image_uris?.normal || selectedVariation.image_uris?.large,
+        }
       });
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/wishlist"] });
+      const totalQuantity = quantities.normal + quantities.foil;
+      const description = quantities.normal > 0 && quantities.foil > 0 
+        ? `Added ${quantities.normal} normal + ${quantities.foil} foil copies of ${selectedVariation.name} to your wishlist.`
+        : quantities.foil > 0
+        ? `Added ${quantities.foil} foil copies of ${selectedVariation.name} to your wishlist.`
+        : `Added ${quantities.normal} copies of ${selectedVariation.name} to your wishlist.`;
+      
       toast({
         title: "Added to Wishlist",
-        description: `Added ${quantity}x ${selectedVariation.name} (${selectedFinish}) to your wishlist.`,
+        description,
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Wishlist add error:", error);
       toast({
         title: "Error",
         description: "Failed to add card to wishlist.",
@@ -112,18 +142,27 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
   const isInCollection = Array.isArray(collection) && collection.some((item: any) => item.cardId === selectedVariation.id);
   const isInWishlist = Array.isArray(wishlist) && wishlist.some((item: any) => item.cardId === selectedVariation.id);
 
+  const handleQuantityChange = (finish: 'normal' | 'foil', change: number) => {
+    setQuantities(prev => ({
+      ...prev,
+      [finish]: Math.max(0, prev[finish] + change)
+    }));
+  };
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-screen bg-mtg-secondary border border-slate-700 text-white overflow-y-auto">
         <div className="flex flex-col lg:flex-row">
           {/* Card Image */}
-          <div className="lg:w-1/2 p-6">
+          <div className="lg:w-1/2 p-6 relative">
             <img
-              src={getCardImageUrl(card, "large")}
-              alt={card.name}
+              src={getCardImageUrl(selectedVariation, "large")}
+              alt={selectedVariation.name}
               className="w-full rounded-lg shadow-lg"
               data-testid="img-card-detail"
             />
+            {/* Foil badge if card has foil availability */}
+            <FoilBadge card={selectedVariation} size="lg" className="absolute top-8 right-8" />
           </div>
 
           {/* Card Details */}
@@ -195,58 +234,16 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
                 </div>
               </div>
 
-              {/* Market Value Section */}
-              {(() => {
-                const priceRange = getPriceRange(card.prices);
-                return priceRange && (
-                  <div className="bg-mtg-gray p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-slate-300 mb-3">Market Value Estimates</label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {priceRange.hasRange ? (
-                        <>
-                          <div className="text-center">
-                            <p className="text-sm text-slate-400">Low</p>
-                            <p className="text-green-300 text-lg font-semibold" data-testid="text-price-low">
-                              ${priceRange.min.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm text-slate-400">Average</p>
-                            <p className="text-green-400 text-xl font-bold" data-testid="text-price-avg">
-                              ${priceRange.avg.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm text-slate-400">High</p>
-                            <p className="text-green-300 text-lg font-semibold" data-testid="text-price-high">
-                              ${priceRange.max.toFixed(2)}
-                            </p>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="col-span-3 text-center">
-                          <p className="text-sm text-slate-400">Current Price</p>
-                          <p className="text-green-400 text-2xl font-bold" data-testid="text-price">
-                            ${priceRange.avg.toFixed(2)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    {card.prices?.usd && card.prices?.usd_foil && (
-                      <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-600">
-                        <div className="text-center">
-                          <p className="text-xs text-slate-500">Normal</p>
-                          <p className="text-white font-medium">${card.prices.usd}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-slate-500">Foil</p>
-                          <p className="text-white font-medium">${card.prices.usd_foil}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+              {/* Enhanced Market Value Section with Foil Comparison */}
+              <div className="bg-mtg-gray p-4 rounded-lg">
+                <label className="block text-sm font-medium text-slate-300 mb-3">Market Value</label>
+                <PriceComparison card={selectedVariation} showDifference={true} />
+                
+                {/* Foil availability indicator */}
+                <div className="mt-3 pt-3 border-t border-slate-600">
+                  <FoilAvailabilityIndicator card={selectedVariation} showPrice={true} size="md" />
+                </div>
+              </div>
 
               {/* Oracle Text */}
               {card.oracle_text && (
@@ -300,61 +297,15 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
                     </TabsList>
 
                     <TabsContent value="details" className="space-y-4 mt-4">
-                      {/* Finish Selection */}
+                      {/* Enhanced Quantity Tracker */}
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Finish</label>
-                        <div className="flex gap-2">
-                          <Button
-                            variant={selectedFinish === 'normal' ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setSelectedFinish('normal')}
-                            className={`flex-1 ${selectedFinish === 'normal' ? 'bg-mtg-accent' : 'border-slate-600'}`}
-                          >
-                            <Package className="mr-2 h-4 w-4" />
-                            Normal
-                            {selectedVariation.prices?.usd && (
-                              <span className="ml-2 text-green-400">${selectedVariation.prices.usd}</span>
-                            )}
-                          </Button>
-                          {selectedVariation.prices?.usd_foil && (
-                            <Button
-                              variant={selectedFinish === 'foil' ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setSelectedFinish('foil')}
-                              className={`flex-1 ${selectedFinish === 'foil' ? 'bg-mtg-accent' : 'border-slate-600'}`}
-                            >
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Foil
-                              <span className="ml-2 text-green-400">${selectedVariation.prices.usd_foil}</span>
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Quantity Selection */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Quantity</label>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                            className="border-slate-600 text-slate-300"
-                          >
-                            -
-                          </Button>
-                          <span className="px-4 py-2 bg-slate-800 rounded text-white min-w-[3rem] text-center">
-                            {quantity}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setQuantity(quantity + 1)}
-                            className="border-slate-600 text-slate-300"
-                          >
-                            +
-                          </Button>
-                        </div>
+                        <label className="text-sm font-medium text-slate-300">Add to Collection</label>
+                        <QuantityTracker
+                          card={selectedVariation}
+                          quantities={quantities}
+                          onQuantityChange={handleQuantityChange}
+                          showPrices={true}
+                        />
                       </div>
 
                       {/* Set Selection */}
@@ -460,22 +411,22 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
             <div className="flex space-x-3 pt-4 border-t border-slate-600">
               <Button
                 onClick={() => addToCollectionMutation.mutate()}
-                disabled={addToCollectionMutation.isPending || isInCollection}
+                disabled={addToCollectionMutation.isPending || isInCollection || (quantities.normal === 0 && quantities.foil === 0)}
                 className="flex-1 bg-mtg-accent hover:bg-mtg-accent/90 text-white py-3 px-4 rounded-lg transition-colors duration-200"
                 data-testid="button-add-to-collection"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {isInCollection ? "In Collection" : "Add to Collection"}
+                {isInCollection ? "Update Collection" : "Add to Collection"}
               </Button>
               <Button
                 onClick={() => addToWishlistMutation.mutate()}
-                disabled={addToWishlistMutation.isPending || isInWishlist || !user}
+                disabled={addToWishlistMutation.isPending || isInWishlist || !user || (quantities.normal === 0 && quantities.foil === 0)}
                 variant="outline"
                 className="flex-1 bg-mtg-primary hover:bg-mtg-primary/90 text-white py-3 px-4 rounded-lg transition-colors duration-200"
                 data-testid="button-add-to-wishlist"
               >
                 <Heart className="mr-2 h-4 w-4" />
-                {isInWishlist ? "In Wishlist" : "Add to Wishlist"}
+                {isInWishlist ? "Update Wishlist" : "Add to Wishlist"}
               </Button>
             </div>
           </div>

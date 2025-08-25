@@ -57,4 +57,5 @@ export interface SearchFilters {
   set?: string;
   rarity?: string[];
   sort?: string;
+  foilFilter?: 'all' | 'foil-only' | 'non-foil-only' | 'has-foil';
 }

@@ -28,6 +28,21 @@ export async function searchCards(filters: SearchFilters, page = 1): Promise<Scr
     const rarityQuery = filters.rarity.map(r => `rarity:${r}`).join(" OR ");
     query += ` (${rarityQuery})`;
   }
+
+  // Add foil-specific filters
+  if (filters.foilFilter) {
+    switch (filters.foilFilter) {
+      case 'foil-only':
+        query += ' is:foil';
+        break;
+      case 'non-foil-only':
+        query += ' -is:foil';
+        break;
+      case 'has-foil':
+        // This will be handled by post-processing since Scryfall doesn't have a direct query for this
+        break;
+    }
+  }
   
   searchParams.set("q", query);
   searchParams.set("page", page.toString());
@@ -131,6 +146,92 @@ export async function getCardVariations(cardName: string): Promise<any[]> {
     console.error("Error fetching card variations:", error);
     return [];
   }
+}
+
+// Search for "Liliana of the Veil" specifically (from user's original request)
+export async function searchLilianaOfTheVeil(): Promise<any[]> {
+  try {
+    const response = await fetch(`https://api.scryfall.com/cards/search?q=!"Liliana of the Veil"`);
+    
+    if (!response.ok) {
+      throw new Error(`Search failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error("Error searching for Liliana of the Veil:", error);
+    return [];
+  }
+}
+
+// Enhanced search with foil filtering
+export async function searchCardsWithFoilOptions(
+  query: string,
+  options: {
+    foilFilter?: 'all' | 'foil-only' | 'non-foil-only' | 'has-foil';
+    sortByFoilPrice?: boolean;
+    page?: number;
+  } = {}
+): Promise<any> {
+  try {
+    let searchQuery = query;
+    
+    // Add foil-specific filters to the query
+    if (options.foilFilter === 'foil-only') {
+      searchQuery += " is:foil";
+    } else if (options.foilFilter === 'non-foil-only') {
+      searchQuery += " -is:foil";
+    }
+
+    const response = await fetch(
+      `https://api.scryfall.com/cards/search?q=${encodeURIComponent(searchQuery)}&unique=cards&order=name&page=${options.page || 1}`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Search failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    let results = data.data || [];
+
+    // Post-process for 'has-foil' filter since Scryfall doesn't have a direct query
+    if (options.foilFilter === 'has-foil') {
+      results = results.filter((card: any) => card.prices?.usd_foil);
+    }
+
+    // Sort by foil price if requested
+    if (options.sortByFoilPrice) {
+      results.sort((a: any, b: any) => {
+        const aPrice = a.prices?.usd_foil ? parseFloat(a.prices.usd_foil) : 0;
+        const bPrice = b.prices?.usd_foil ? parseFloat(b.prices.usd_foil) : 0;
+        return bPrice - aPrice; // Descending order
+      });
+    }
+
+    return {
+      ...data,
+      data: results
+    };
+  } catch (error) {
+    console.error("Error searching cards with foil options:", error);
+    return { data: [] };
+  }
+}
+
+// Check if a card has foil availability
+export function hasfoilAvailability(card: any): boolean {
+  return !!(card.prices?.usd_foil);
+}
+
+// Get foil price premium percentage
+export function getFoilPremium(card: any): number | null {
+  const normalPrice = card.prices?.usd ? parseFloat(card.prices.usd) : null;
+  const foilPrice = card.prices?.usd_foil ? parseFloat(card.prices.usd_foil) : null;
+  
+  if (!normalPrice || !foilPrice || normalPrice <= 0) return null;
+  
+  return ((foilPrice - normalPrice) / normalPrice) * 100;
 }
 
 // Get card by specific set and collector number
