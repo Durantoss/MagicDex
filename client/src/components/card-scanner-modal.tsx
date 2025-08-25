@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, X, Scan, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Camera, X, Scan, Loader2, CheckCircle, AlertCircle, Plus, Eye } from "lucide-react";
 import Tesseract from 'tesseract.js';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import CardDetailModal from "./card-detail-modal";
+import { searchCards } from "@/lib/scryfall-api";
 
 interface CardScannerModalProps {
   open: boolean;
@@ -27,6 +29,9 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
   const [cameraActive, setCameraActive] = useState(false);
   const [detectedText, setDetectedText] = useState<string>("");
   const [detectedCard, setDetectedCard] = useState<DetectedCard | null>(null);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const [showCardDetail, setShowCardDetail] = useState(false);
   const [error, setError] = useState<string>("");
   const [scanProgress, setScanProgress] = useState<string>("");
 
@@ -247,33 +252,44 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
       return;
     }
 
-    // Try each potential name with Scryfall API
-    for (const cardName of potentialNames.slice(0, 3)) { // Try top 3 candidates
-      const scryfallData = await searchScryfallCard(cardName);
-      
-      if (scryfallData) {
-        const detectedCard: DetectedCard = {
-          name: scryfallData.name,
-          confidence: 0.8, // Base confidence for successful Scryfall match
-          scryfallData
-        };
+    // Search for multiple potential matches using direct Scryfall API
+    const searchPromises = potentialNames.slice(0, 3).map(async (cardName) => {
+      try {
+        setScanProgress(`Searching for "${cardName}"...`);
+        const response = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"&unique=cards&order=name`);
         
-        setDetectedCard(detectedCard);
-        await handleAddCard({ 
-          name: scryfallData.name, 
-          detectedText: text,
-          scryfallData 
-        });
-        return;
+        if (response.ok) {
+          const data = await response.json();
+          return data.data?.slice(0, 5) || []; // Limit to top 5 results per search
+        }
+        return [];
+      } catch (error) {
+        console.error(`Search failed for "${cardName}":`, error);
+        return [];
       }
-    }
-
-    // If no Scryfall matches, show the best guess
-    toast({
-      title: "Card not found",
-      description: `Detected "${potentialNames[0]}" but couldn't find it in the database.`,
-      variant: "destructive",
     });
+
+    const allResults = await Promise.all(searchPromises);
+    const flatResults = allResults.flat();
+    
+    // Remove duplicates based on card ID
+    const uniqueResults = flatResults.filter((card: any, index: number, self: any[]) => 
+      index === self.findIndex((c: any) => c.id === card.id)
+    );
+
+    if (uniqueResults.length > 0) {
+      setSearchResults(uniqueResults);
+      toast({
+        title: "Cards found!",
+        description: `Found ${uniqueResults.length} potential matches. Tap a card to view details.`,
+      });
+    } else {
+      toast({
+        title: "Card not found",
+        description: `Detected "${potentialNames[0]}" but couldn't find it in the database.`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAddCard = async (cardData: { name: string; detectedText: string; scryfallData?: any }) => {
@@ -312,10 +328,21 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     }
   };
 
+  const handleCardClick = (card: any) => {
+    setSelectedCard(card);
+    setShowCardDetail(true);
+  };
+
+  const handleCloseCardDetail = () => {
+    setShowCardDetail(false);
+    setSelectedCard(null);
+  };
+
   const handleClose = () => {
     stopCamera();
     onOpenChange(false);
     setDetectedText("");
+    setSearchResults([]);
     setError("");
   };
 
@@ -437,8 +464,57 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
             </div>
           )}
 
+          {/* Search Results Display */}
+          {searchResults.length > 0 && (
+            <div className="bg-glass rounded-lg p-4 border border-glass">
+              <div className="flex items-center gap-3 mb-3">
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <h4 className="text-sm font-semibold text-slate-300">
+                  Found {searchResults.length} potential matches
+                </h4>
+              </div>
+              <div className="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto">
+                {searchResults.map((card) => (
+                  <div
+                    key={card.id}
+                    className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors"
+                    onClick={() => handleCardClick(card)}
+                  >
+                    <img
+                      src={card.image_uris?.small || "https://via.placeholder.com/63x88/1e293b/ffffff?text=No+Image"}
+                      alt={card.name}
+                      className="w-12 h-16 rounded object-cover flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-white truncate">{card.name}</p>
+                      <p className="text-xs text-slate-400 truncate">{card.set_name}</p>
+                      <p className="text-xs text-slate-500">{card.type_line}</p>
+                      {card.prices?.usd && (
+                        <p className="text-xs text-green-400">${card.prices.usd}</p>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 px-2 border-slate-600 hover:bg-slate-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCardClick(card);
+                        }}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Detected Text Display */}
-          {detectedText && !detectedCard && (
+          {detectedText && !detectedCard && searchResults.length === 0 && (
             <div className="bg-glass rounded-lg p-4 border border-glass">
               <h4 className="text-sm font-semibold text-slate-300 mb-2">Detected Text:</h4>
               <pre className="text-xs text-slate-400 whitespace-pre-wrap max-h-32 overflow-y-auto">
@@ -455,6 +531,14 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
           </div>
         </div>
       </DialogContent>
+
+      {/* Card Detail Modal */}
+      {showCardDetail && selectedCard && (
+        <CardDetailModal
+          card={selectedCard}
+          onClose={handleCloseCardDetail}
+        />
+      )}
     </Dialog>
   );
 }

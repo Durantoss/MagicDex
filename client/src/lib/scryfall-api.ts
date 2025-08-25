@@ -115,3 +115,65 @@ export function getPriceRange(prices?: { usd?: string; usd_foil?: string; eur?: 
   
   return { min, max, avg, hasRange: min !== max };
 }
+
+// Fetch all printings/variations of a card by name
+export async function getCardVariations(cardName: string): Promise<any[]> {
+  try {
+    const response = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"&unique=prints&order=released`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch variations: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error("Error fetching card variations:", error);
+    return [];
+  }
+}
+
+// Get card by specific set and collector number
+export async function getCardBySetAndNumber(setCode: string, collectorNumber: string): Promise<any | null> {
+  try {
+    const response = await fetch(`https://api.scryfall.com/cards/${setCode}/${collectorNumber}`);
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching specific card:", error);
+    return null;
+  }
+}
+
+// Group variations by set for better organization
+export function groupVariationsBySet(variations: any[]): Record<string, any[]> {
+  const grouped = variations.reduce((acc, card) => {
+    const setName = card.set_name;
+    if (!acc[setName]) {
+      acc[setName] = [];
+    }
+    acc[setName].push(card);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  // Sort sets by release date (newest first)
+  return Object.entries(grouped)
+    .sort(([, a], [, b]) => {
+      const dateA = new Date((a as any[])[0]?.released_at || '1900-01-01');
+      const dateB = new Date((b as any[])[0]?.released_at || '1900-01-01');
+      return dateB.getTime() - dateA.getTime();
+    })
+    .reduce((acc, [setName, cards]) => {
+      acc[setName] = (cards as any[]).sort((a: any, b: any) => {
+        // Sort by collector number within set
+        const numA = parseInt(a.collector_number) || 0;
+        const numB = parseInt(b.collector_number) || 0;
+        return numA - numB;
+      });
+      return acc;
+    }, {} as Record<string, any[]>);
+}

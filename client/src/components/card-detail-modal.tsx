@@ -1,14 +1,17 @@
 import { ScryfallCard } from "@/types/scryfall";
-import { getCardImageUrl, formatManaCost, getRarityColor, getManaTypeColors, getColorSymbols, getPriceRange } from "@/lib/scryfall-api";
+import { getCardImageUrl, formatManaCost, getRarityColor, getManaTypeColors, getColorSymbols, getPriceRange, getCardVariations, groupVariationsBySet } from "@/lib/scryfall-api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Heart, X, Loader2, Package, Sparkles } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { wishlistApi } from "@/lib/api";
+import { useState } from "react";
 
 interface CardDetailModalProps {
   card: ScryfallCard;
@@ -19,6 +22,9 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [selectedVariation, setSelectedVariation] = useState<any>(card);
+  const [selectedFinish, setSelectedFinish] = useState<'normal' | 'foil'>('normal');
+  const [quantity, setQuantity] = useState(1);
 
   // Get user collection
   const { data: collection = [] } = useQuery({
@@ -32,13 +38,27 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     enabled: !!user,
   });
 
+  // Get card variations
+  const { data: variations = [], isLoading: variationsLoading } = useQuery({
+    queryKey: ["card-variations", card.name],
+    queryFn: () => getCardVariations(card.name),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  const groupedVariations = groupVariationsBySet(variations);
+
   // Add to collection mutation
   const addToCollectionMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/collection", {
-        cardId: card.id,
-        quantity: 1,
-        cardData: card,
+        cardId: selectedVariation.id,
+        quantity: quantity,
+        finish: selectedFinish,
+        cardData: {
+          ...selectedVariation,
+          finish: selectedFinish,
+          quantity: quantity
+        },
       });
       return response.json();
     },
@@ -46,7 +66,7 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
       queryClient.invalidateQueries({ queryKey: ["/api/collection"] });
       toast({
         title: "Added to Collection",
-        description: "Card has been added to your collection.",
+        description: `Added ${quantity}x ${selectedVariation.name} (${selectedFinish}) to your collection.`,
       });
     },
     onError: () => {
@@ -64,16 +84,20 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
       if (!user) throw new Error("User not authenticated");
       return await wishlistApi.addToWishlist({
         userId: user.id,
-        cardId: card.id,
-        quantity: 1,
-        cardData: card as any,
+        cardId: selectedVariation.id,
+        quantity: quantity,
+        cardData: {
+          ...selectedVariation,
+          finish: selectedFinish,
+          quantity: quantity
+        } as any,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/wishlist"] });
       toast({
         title: "Added to Wishlist",
-        description: "Card has been added to your wishlist.",
+        description: `Added ${quantity}x ${selectedVariation.name} (${selectedFinish}) to your wishlist.`,
       });
     },
     onError: () => {
@@ -85,8 +109,8 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     },
   });
 
-  const isInCollection = Array.isArray(collection) && collection.some((item: any) => item.cardId === card.id);
-  const isInWishlist = Array.isArray(wishlist) && wishlist.some((item: any) => item.cardId === card.id);
+  const isInCollection = Array.isArray(collection) && collection.some((item: any) => item.cardId === selectedVariation.id);
+  const isInWishlist = Array.isArray(wishlist) && wishlist.some((item: any) => item.cardId === selectedVariation.id);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -254,17 +278,179 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
                 </div>
               )}
 
+              {/* Card Variations Section */}
+              {variations.length > 1 && (
+                <div className="bg-mtg-gray p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Package className="h-5 w-5 text-mtg-accent" />
+                    <label className="text-sm font-medium text-slate-300">
+                      Available Variations ({variations.length} printings)
+                    </label>
+                    {variationsLoading && <Loader2 className="h-4 w-4 animate-spin text-mtg-accent" />}
+                  </div>
+
+                  <Tabs defaultValue="details" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-slate-800">
+                      <TabsTrigger value="details" className="text-slate-300 data-[state=active]:text-white">
+                        Collection Options
+                      </TabsTrigger>
+                      <TabsTrigger value="variations" className="text-slate-300 data-[state=active]:text-white">
+                        All Printings
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="details" className="space-y-4 mt-4">
+                      {/* Finish Selection */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Finish</label>
+                        <div className="flex gap-2">
+                          <Button
+                            variant={selectedFinish === 'normal' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSelectedFinish('normal')}
+                            className={`flex-1 ${selectedFinish === 'normal' ? 'bg-mtg-accent' : 'border-slate-600'}`}
+                          >
+                            <Package className="mr-2 h-4 w-4" />
+                            Normal
+                            {selectedVariation.prices?.usd && (
+                              <span className="ml-2 text-green-400">${selectedVariation.prices.usd}</span>
+                            )}
+                          </Button>
+                          {selectedVariation.prices?.usd_foil && (
+                            <Button
+                              variant={selectedFinish === 'foil' ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setSelectedFinish('foil')}
+                              className={`flex-1 ${selectedFinish === 'foil' ? 'bg-mtg-accent' : 'border-slate-600'}`}
+                            >
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Foil
+                              <span className="ml-2 text-green-400">${selectedVariation.prices.usd_foil}</span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Quantity Selection */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Quantity</label>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            className="border-slate-600 text-slate-300"
+                          >
+                            -
+                          </Button>
+                          <span className="px-4 py-2 bg-slate-800 rounded text-white min-w-[3rem] text-center">
+                            {quantity}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setQuantity(quantity + 1)}
+                            className="border-slate-600 text-slate-300"
+                          >
+                            +
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Set Selection */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Set</label>
+                        <Select
+                          value={selectedVariation.id}
+                          onValueChange={(value) => {
+                            const variation = variations.find(v => v.id === value);
+                            if (variation) setSelectedVariation(variation);
+                          }}
+                        >
+                          <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-slate-600">
+                            {Object.entries(groupedVariations).map(([setName, setCards]) => (
+                              setCards.map((variation: any) => (
+                                <SelectItem
+                                  key={variation.id}
+                                  value={variation.id}
+                                  className="text-white hover:bg-slate-700"
+                                >
+                                  <div className="flex items-center justify-between w-full">
+                                    <span>{setName} ({variation.set.toUpperCase()})</span>
+                                    {variation.prices?.usd && (
+                                      <span className="text-green-400 ml-2">${variation.prices.usd}</span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="variations" className="mt-4">
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {Object.entries(groupedVariations).map(([setName, setCards]) => (
+                          <div key={setName} className="space-y-2">
+                            <h4 className="text-sm font-semibold text-slate-300 border-b border-slate-600 pb-1">
+                              {setName}
+                            </h4>
+                            <div className="grid grid-cols-1 gap-2">
+                              {(setCards as any[]).map((variation) => (
+                                <div
+                                  key={variation.id}
+                                  className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
+                                    selectedVariation.id === variation.id
+                                      ? 'bg-mtg-accent/20 border border-mtg-accent'
+                                      : 'bg-slate-800 hover:bg-slate-700 border border-slate-600'
+                                  }`}
+                                  onClick={() => setSelectedVariation(variation)}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <img
+                                      src={getCardImageUrl(variation, "small")}
+                                      alt={variation.name}
+                                      className="w-8 h-11 rounded object-cover"
+                                    />
+                                    <div>
+                                      <p className="text-sm text-white">{variation.set.toUpperCase()}</p>
+                                      <p className="text-xs text-slate-400">#{variation.collector_number}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    {variation.prices?.usd && (
+                                      <p className="text-sm text-green-400">${variation.prices.usd}</p>
+                                    )}
+                                    {variation.prices?.usd_foil && (
+                                      <p className="text-xs text-green-300">Foil: ${variation.prices.usd_foil}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              )}
+
               {/* Additional Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-1">Set</label>
-                  <p className="text-white" data-testid="text-set-name">{card.set_name}</p>
-                  <p className="text-slate-400 text-sm" data-testid="text-set-code">({card.set.toUpperCase()})</p>
+                  <p className="text-white" data-testid="text-set-name">{selectedVariation.set_name}</p>
+                  <p className="text-slate-400 text-sm" data-testid="text-set-code">({selectedVariation.set.toUpperCase()})</p>
                 </div>
-                {card.artist && (
+                {selectedVariation.artist && (
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1">Artist</label>
-                    <p className="text-white" data-testid="text-artist">{card.artist}</p>
+                    <p className="text-white" data-testid="text-artist">{selectedVariation.artist}</p>
                   </div>
                 )}
               </div>
