@@ -102,7 +102,7 @@ export default function CardGrid({
   return (
     <div>
       {/* Enhanced Card Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2 sm:gap-4 lg:gap-6 mb-6 sm:mb-8 lg:mb-12">
         {cards.map((card, index) => (
           <div
             key={card.id}
@@ -122,7 +122,7 @@ export default function CardGrid({
                 <img
                   src={getCardImageUrl(card, "normal")}
                   alt={card.name}
-                  className="w-full h-64 sm:h-72 md:h-80 object-cover group-hover:scale-110 transition-all duration-700 group-hover:brightness-110"
+                  className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover group-hover:scale-110 transition-all duration-700 group-hover:brightness-110"
                   loading="lazy"
                 />
                 
@@ -140,34 +140,34 @@ export default function CardGrid({
               </div>
               
               {/* Enhanced Card Info */}
-              <div className="p-3 sm:p-4 lg:p-5 space-y-2 sm:space-y-3">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-white text-base sm:text-lg leading-tight group-hover:text-gradient-primary transition-all duration-300" data-testid={`text-card-name-${card.id}`}>
+              <div className="p-2 sm:p-3 lg:p-4 space-y-1.5 sm:space-y-2">
+                <div className="space-y-0.5 sm:space-y-1">
+                  <h3 className="font-bold text-white text-sm sm:text-base lg:text-lg leading-tight group-hover:text-gradient-primary transition-all duration-300 line-clamp-2" data-testid={`text-card-name-${card.id}`}>
                     {card.name}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-300 font-medium" data-testid={`text-card-type-${card.id}`}>
+                  <p className="text-xs text-slate-300 font-medium line-clamp-1" data-testid={`text-card-type-${card.id}`}>
                     {card.type_line}
                   </p>
                   {card.set_name && (
-                    <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
-                      <span className="text-xs text-mtg-accent font-medium bg-slate-800/50 px-2 py-1 rounded">
-                        {card.set_name} ({card.set?.toUpperCase()})
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-xs text-mtg-accent font-medium bg-slate-800/50 px-1.5 py-0.5 rounded text-center truncate">
+                        {card.set?.toUpperCase() || card.set_name}
                       </span>
-                      <span className={`text-xs px-2 py-1 rounded font-medium ${getRarityColor(card.rarity)} text-white w-fit`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${getRarityColor(card.rarity)} text-white text-center`}>
                         {card.rarity}
                       </span>
                     </div>
                   )}
                 </div>
                 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                <div className="flex items-center justify-between space-x-1">
                   {/* Enhanced Mana Cost / CMC Display */}
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs sm:text-sm text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full font-semibold shadow-sm bg-slate-700 backdrop-blur-sm">
+                  <div className="flex flex-col space-y-1 flex-1 min-w-0">
+                    <span className="text-xs text-white px-2 py-1 rounded-full font-semibold shadow-sm bg-slate-700 backdrop-blur-sm text-center truncate">
                       {formatManaCost(card.mana_cost) || `${card.cmc} CMC`}
                     </span>
                     {card.prices?.usd && (
-                      <span className="text-xs text-green-400 font-bold">
+                      <span className="text-xs text-green-400 font-bold text-center">
                         ${parseFloat(card.prices.usd).toFixed(2)}
                       </span>
                     )}
@@ -178,7 +178,7 @@ export default function CardGrid({
                     size="sm"
                     variant="ghost"
                     onClick={(e) => handleCollectionToggle(e, card)}
-                    className={`relative p-2 sm:p-2.5 rounded-full transition-all duration-300 hover:scale-110 touch-manipulation ${
+                    className={`relative p-2 rounded-full transition-all duration-300 hover:scale-110 touch-manipulation flex-shrink-0 ${
                       isInCollection(card.id)
                         ? "bg-gradient-accent text-white shadow-glow hover:shadow-magical"
                         : "bg-glass border-glass text-mtg-accent hover:bg-gradient-accent hover:text-white hover:shadow-glow"
@@ -187,8 +187,8 @@ export default function CardGrid({
                     data-testid={`button-collection-toggle-${card.id}`}
                   >
                     {isInCollection(card.id) ? 
-                      <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-pulse" /> : 
-                      <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:rotate-90 transition-transform duration-300" />
+                      <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-pulse" /> : 
+                      <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:rotate-90 transition-transform duration-300" />
                     }
                   </Button>
                 </div>

@@ -471,6 +471,28 @@
     -webkit-overflow-scrolling: touch;
   }
   
+  /* Text truncation utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  
   /* Responsive visibility */
   @media (max-width: 640px) {
     .hidden-mobile {
@@ -490,5 +512,54 @@
     padding-right: env(safe-area-inset-right);
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Mobile-optimized text sizes */
+  .text-mobile-xs {
+    font-size: clamp(0.625rem, 2vw, 0.75rem);
+  }
+  
+  .text-mobile-sm {
+    font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+  }
+  
+  .text-mobile-base {
+    font-size: clamp(0.875rem, 3vw, 1rem);
+  }
+  
+  .text-mobile-lg {
+    font-size: clamp(1rem, 3.5vw, 1.125rem);
+  }
+  
+  /* Mobile-optimized spacing */
+  .p-mobile {
+    padding: clamp(0.5rem, 2vw, 1rem);
+  }
+  
+  .px-mobile {
+    padding-left: clamp(0.5rem, 2vw, 1rem);
+    padding-right: clamp(0.5rem, 2vw, 1rem);
+  }
+  
+  .py-mobile {
+    padding-top: clamp(0.5rem, 2vw, 1rem);
+    padding-bottom: clamp(0.5rem, 2vw, 1rem);
+  }
+  
+  .gap-mobile {
+    gap: clamp(0.25rem, 1vw, 0.5rem);
+  }
+  
+  /* Mobile-friendly button sizes */
+  .btn-touch {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Improved mobile card layouts */
+  .card-mobile {
+    border-radius: clamp(0.5rem, 2vw, 1rem);
+    padding: clamp(0.5rem, 2vw, 1rem);
   }
 }

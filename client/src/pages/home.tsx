@@ -29,6 +29,7 @@ export default function Home() {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showScannerModal, setShowScannerModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const { data: searchResults, isLoading, error } = useQuery({
     queryKey: ["cards/search", filters, currentPage],
@@ -189,122 +190,172 @@ export default function Home() {
 
           {/* Mobile Header Layout */}
           <div className="lg:hidden">
-            {/* Top Row - Logo and Profile */}
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-2">
+            {/* Top Row - Logo, Search, and Menu Toggle */}
+            <div className="flex items-center justify-between h-14 py-2">
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <div className="relative">
-                  <div className="text-2xl animate-glow">✨</div>
-                  <div className="absolute inset-0 text-2xl animate-pulse opacity-50">✨</div>
+                  <div className="text-xl animate-glow">✨</div>
+                  <div className="absolute inset-0 text-xl animate-pulse opacity-50">✨</div>
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold text-gradient-primary" data-testid="text-site-title">
+                  <h1 className="text-base font-bold text-gradient-primary" data-testid="text-site-title">
                     MTG Database
                   </h1>
                 </div>
               </div>
               
-              {user ? (
-                <div className="flex items-center space-x-2">
-                  <Link href="/profile">
+              {/* Compact Search Bar */}
+              <div className="flex-1 mx-3 max-w-xs">
+                <div className="relative">
+                  <SearchBar onSearch={handleSearch} currentFilters={filters} />
+                  <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-20 blur-sm animate-pulse pointer-events-none"></div>
+                </div>
+              </div>
+              
+              {/* Menu Toggle Button */}
+              <Button 
+                size="sm"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="relative bg-glass border-glass text-white font-semibold p-2.5 rounded-lg transition-all duration-300 hover:scale-105 shadow-card flex-shrink-0"
+                data-testid="button-mobile-menu"
+              >
+                <div className="flex flex-col space-y-1">
+                  <div className={`w-4 h-0.5 bg-white transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-1.5' : ''}`}></div>
+                  <div className={`w-4 h-0.5 bg-white transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></div>
+                  <div className={`w-4 h-0.5 bg-white transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+                </div>
+              </Button>
+            </div>
+
+            {/* Mobile Menu Dropdown */}
+            <div className={`transition-all duration-300 overflow-hidden ${showMobileMenu ? 'max-h-96 pb-4' : 'max-h-0'}`}>
+              <div className="bg-glass/90 backdrop-blur-md rounded-xl mx-2 p-4 border border-glass">
+                {/* User Actions Row */}
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-glass">
+                  {user ? (
+                    <div className="flex items-center space-x-2">
+                      <Link href="/profile">
+                        <Button 
+                          size="sm"
+                          className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                          data-testid="button-profile-mobile"
+                          onClick={() => setShowMobileMenu(false)}
+                        >
+                          <User className="mr-1.5 h-4 w-4" />
+                          Profile
+                        </Button>
+                      </Link>
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          handleSignOut();
+                          setShowMobileMenu(false);
+                        }}
+                        className="relative bg-red-600 hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                        data-testid="button-signout-mobile"
+                      >
+                        <LogOut className="mr-1.5 h-4 w-4" />
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
                     <Button 
                       size="sm"
-                      className="relative bg-mtg-secondary hover:shadow-card-hover text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card border-glass"
-                      data-testid="button-profile-mobile"
+                      onClick={() => {
+                        setShowAuthModal(true);
+                        setShowMobileMenu(false);
+                      }}
+                      className="relative bg-green-600 hover:shadow-glow text-white font-semibold px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                      data-testid="button-signin-mobile"
                     >
-                      <User className="h-4 w-4" />
+                      <LogIn className="mr-1.5 h-4 w-4" />
+                      Sign In
+                    </Button>
+                  )}
+                </div>
+
+                {/* Navigation Actions Grid */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <Link href="/rules">
+                    <Button 
+                      size="sm"
+                      className="relative bg-gradient-gold hover:shadow-glow text-white font-semibold w-full py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                      data-testid="button-rules-mobile"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      <Book className="mr-1.5 h-4 w-4" />
+                      Rules
+                    </Button>
+                  </Link>
+                  <Link href="/dictionary">
+                    <Button 
+                      size="sm"
+                      className="relative bg-purple-600 hover:shadow-glow text-white font-semibold w-full py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                      data-testid="button-dictionary-mobile"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      <BookOpen className="mr-1.5 h-4 w-4" />
+                      Dictionary
                     </Button>
                   </Link>
                   <Button 
                     size="sm"
-                    onClick={handleSignOut}
-                    className="relative bg-red-600 hover:shadow-glow text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
-                    data-testid="button-signout-mobile"
+                    onClick={() => {
+                      setShowScannerModal(true);
+                      setShowMobileMenu(false);
+                    }}
+                    className="relative bg-blue-600 hover:shadow-glow text-white font-semibold w-full py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                    data-testid="button-scanner-mobile"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <Camera className="mr-1.5 h-4 w-4" />
+                    Scan Card
                   </Button>
+                  {user && (
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        setShowDeckBuilderModal(true);
+                        setShowMobileMenu(false);
+                      }}
+                      className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold w-full py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm touch-manipulation"
+                      data-testid="button-deck-builder-mobile"
+                    >
+                      <Wand2 className="mr-1.5 h-4 w-4" />
+                      AI Builder
+                    </Button>
+                  )}
                 </div>
-              ) : (
-                <Button 
-                  size="sm"
-                  onClick={() => setShowAuthModal(true)}
-                  className="relative bg-green-600 hover:shadow-glow text-white font-semibold p-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card"
-                  data-testid="button-signin-mobile"
-                >
-                  <LogIn className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
 
-            {/* Second Row - Search Bar */}
-            <div className="pb-3">
-              <div className="relative">
-                <SearchBar onSearch={handleSearch} currentFilters={filters} />
-                <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-20 blur-sm animate-pulse pointer-events-none"></div>
+                {/* User-specific Actions */}
+                {user && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        setShowCollectionModal(true);
+                        setShowMobileMenu(false);
+                      }}
+                      className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold w-full py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                      data-testid="button-collection-mobile"
+                    >
+                      <Bookmark className="mr-1.5 h-4 w-4" />
+                      Collection
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        setShowWishlistModal(true);
+                        setShowMobileMenu(false);
+                      }}
+                      className="relative bg-pink-600 hover:shadow-glow text-white font-semibold w-full py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                      data-testid="button-wishlist-mobile"
+                    >
+                      <Heart className="mr-1.5 h-4 w-4" />
+                      Wishlist
+                    </Button>
+                  </div>
+                )}
               </div>
-            </div>
-
-            {/* Third Row - Action Buttons */}
-            <div className="flex items-center justify-center space-x-2 pb-4">
-              <Link href="/rules">
-                <Button 
-                  size="sm"
-                  className="relative bg-gradient-gold hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
-                  data-testid="button-rules-mobile"
-                >
-                  <Book className="mr-1.5 h-4 w-4" />
-                  Rules
-                </Button>
-              </Link>
-              <Link href="/dictionary">
-                <Button 
-                  size="sm"
-                  className="relative bg-purple-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
-                  data-testid="button-dictionary-mobile"
-                >
-                  <BookOpen className="mr-1.5 h-4 w-4" />
-                  Dictionary
-                </Button>
-              </Link>
-              <Button 
-                size="sm"
-                onClick={() => setShowScannerModal(true)}
-                className="relative bg-blue-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
-                data-testid="button-scanner-mobile"
-              >
-                <Camera className="mr-1.5 h-4 w-4" />
-                Scan
-              </Button>
-              {user && (
-                <>
-                  <Button 
-                    size="sm"
-                    onClick={() => setShowDeckBuilderModal(true)}
-                    className="relative bg-mtg-primary hover:shadow-magical text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card animate-glow text-sm touch-manipulation"
-                    data-testid="button-deck-builder-mobile"
-                  >
-                    <Wand2 className="mr-1.5 h-4 w-4" />
-                    AI Builder
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => setShowCollectionModal(true)}
-                    className="relative bg-mtg-accent hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
-                    data-testid="button-collection-mobile"
-                  >
-                    <Bookmark className="mr-1.5 h-4 w-4" />
-                    Collection
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => setShowWishlistModal(true)}
-                    className="relative bg-pink-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
-                    data-testid="button-wishlist-mobile"
-                  >
-                    <Heart className="mr-1.5 h-4 w-4" />
-                    Wishlist
-                  </Button>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -314,21 +365,21 @@ export default function Home() {
         {/* Enhanced Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Enhanced Search Results Header */}
-          <div className="relative mb-8">
+          <div className="relative mb-6 sm:mb-8">
             <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <h2 className="text-4xl font-bold text-gradient-primary mb-1" data-testid="text-search-title">
+              <div className="space-y-1 sm:space-y-2">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gradient-primary mb-1" data-testid="text-search-title">
                   {filters.query ? "Search Results" : "Discover Magic"}
                 </h2>
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
                   {searchResults && (
-                    <p className="text-slate-300 font-medium" data-testid="text-results-count">
+                    <p className="text-slate-300 font-medium text-sm sm:text-base" data-testid="text-results-count">
                       <span className="text-gradient-accent font-bold">{searchResults.data.length}</span> of{' '}
                       <span className="text-gradient-gold font-bold">{searchResults.total_cards.toLocaleString()}</span> cards found
                     </p>
                   )}
                   {!filters.query && (
-                    <p className="text-slate-400 italic">
+                    <p className="text-slate-400 italic text-sm sm:text-base">
                       Search for cards, build decks, manage your collection
                     </p>
                   )}
@@ -336,8 +387,8 @@ export default function Home() {
               </div>
             </div>
             {/* Decorative elements */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-primary opacity-10 rounded-full blur-xl animate-float"></div>
-            <div className="absolute -bottom-2 -left-2 w-16 h-16 bg-gradient-accent opacity-10 rounded-full blur-lg animate-float" style={{animationDelay: '1s'}}></div>
+            <div className="absolute -top-4 -right-4 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-primary opacity-10 rounded-full blur-xl animate-float"></div>
+            <div className="absolute -bottom-2 -left-2 w-12 h-12 sm:w-16 sm:h-16 bg-gradient-accent opacity-10 rounded-full blur-lg animate-float" style={{animationDelay: '1s'}}></div>
           </div>
 
           {/* Content */}
@@ -398,16 +449,16 @@ export default function Home() {
         </main>
 
         {/* Legal Disclaimer */}
-        <footer className="mt-16 border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <div className="w-8 h-0.5 bg-gradient-primary"></div>
-                <span className="text-slate-400 font-medium text-sm">DISCLAIMER</span>
-                <div className="w-8 h-0.5 bg-gradient-primary"></div>
+        <footer className="mt-8 sm:mt-16 border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="text-center space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-center space-x-2 mb-3 sm:mb-4">
+                <div className="w-6 sm:w-8 h-0.5 bg-gradient-primary"></div>
+                <span className="text-slate-400 font-medium text-xs sm:text-sm">DISCLAIMER</span>
+                <div className="w-6 sm:w-8 h-0.5 bg-gradient-primary"></div>
               </div>
               
-              <div className="max-w-4xl mx-auto space-y-3 text-slate-400 text-sm leading-relaxed">
+              <div className="max-w-4xl mx-auto space-y-2 sm:space-y-3 text-slate-400 text-xs sm:text-sm leading-relaxed">
                 <p>
                   <strong className="text-slate-300">For Informational Purposes Only:</strong> This application is designed for educational and informational purposes only. It is not affiliated with, endorsed by, or sponsored by Wizards of the Coast LLC.
                 </p>
