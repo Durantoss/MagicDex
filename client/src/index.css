@@ -80,11 +80,11 @@
 
 /* New Color Scheme Integration */
 :root {
-  --color-accent: #FF3B3F;
-  --color-background: #F99A72;
-  --color-highlight: #FFF75A;
-  --color-text: #7F5A83;
-  --color-foil-glow: rgba(255, 59, 63, 0.6);
+  --accent: #FF3B3F;         /* Candy Red */
+  --background: #F99A72;     /* Peach Orange */
+  --highlight: #FFF75A;      /* Daffodil Yellow */
+  --text-primary: #7F5A83;   /* Dark Lavender */
+  --foil-glow: rgba(255, 59, 63, 0.4);
 }
 
 .bg-mtg-primary { background-color: var(--mtg-primary); }
@@ -97,17 +97,17 @@
 .hover\:bg-glass:hover { background-color: var(--glass); }
 
 /* New Color Scheme Utility Classes */
-.bg-color-accent { background-color: var(--color-accent); }
-.bg-color-background { background-color: var(--color-background); }
-.bg-color-highlight { background-color: var(--color-highlight); }
-.text-color-accent { color: var(--color-accent); }
-.text-color-background { color: var(--color-background); }
-.text-color-highlight { color: var(--color-highlight); }
-.text-color-text { color: var(--color-text); }
-.border-color-accent { border-color: var(--color-accent); }
-.border-color-highlight { border-color: var(--color-highlight); }
-.hover\:bg-color-accent:hover { background-color: var(--color-accent); }
-.hover\:text-color-highlight:hover { color: var(--color-highlight); }
+.bg-accent { background-color: var(--accent); }
+.bg-background { background-color: var(--background); }
+.bg-highlight { background-color: var(--highlight); }
+.text-accent { color: var(--accent); }
+.text-background { color: var(--background); }
+.text-highlight { color: var(--highlight); }
+.text-primary { color: var(--text-primary); }
+.border-accent { border-color: var(--accent); }
+.border-highlight { border-color: var(--highlight); }
+.hover\:bg-accent:hover { background-color: var(--accent); }
+.hover\:text-highlight:hover { color: var(--highlight); }
 
 .text-gradient-primary {
   background: linear-gradient(135deg, #e94560, #f39c12);
@@ -121,12 +121,12 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: linear-gradient(45deg, var(--color-highlight), var(--color-accent));
-  color: var(--color-text);
+  background: linear-gradient(45deg, var(--highlight), var(--accent));
+  color: var(--text-primary);
   font-weight: bold;
   padding: 4px 8px;
   border-radius: 6px;
-  box-shadow: 0 0 6px var(--color-foil-glow);
+  box-shadow: 0 0 6px var(--foil-glow);
   font-size: 0.75rem;
   z-index: 10;
 }
@@ -143,7 +143,7 @@
 .foil-toggle input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: var(--color-highlight);
+  accent-color: var(--highlight);
 }
 
 /* Quantity Tracker Styling */
@@ -209,7 +209,7 @@
 }
 
 .finish-label.foil {
-  color: var(--color-highlight);
+  color: var(--highlight);
 }
 
 .price-display {
@@ -234,7 +234,7 @@
   background: linear-gradient(
     45deg,
     transparent 30%,
-    var(--color-foil-glow) 50%,
+    var(--foil-glow) 50%,
     transparent 70%
   );
   transform: rotate(45deg);
@@ -272,7 +272,7 @@
   background: linear-gradient(
     45deg,
     transparent 30%,
-    var(--color-foil-glow) 50%,
+    var(--foil-glow) 50%,
     transparent 70%
   );
   transform: translateX(-100%) rotate(45deg);
@@ -309,7 +309,7 @@
 }
 
 .stat-foil {
-  color: var(--color-highlight);
+  color: var(--highlight);
 }
 
 /* Filter enhancements for foil */
