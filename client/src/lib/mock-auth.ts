@@ -34,6 +34,20 @@ const mockUsers: Array<{ email: string; password: string; id: string }> = [
   { email: 'test@example.com', password: 'password123', id: 'test-user-1' }
 ]
 
+// Track auth state change callbacks
+const authStateChangeCallbacks: Array<(event: string, session: Session | null) => void> = []
+
+// Helper function to notify all listeners
+const notifyAuthStateChange = (event: string, session: Session | null) => {
+  authStateChangeCallbacks.forEach(callback => {
+    try {
+      callback(event, session)
+    } catch (error) {
+      console.error('Error in auth state change callback:', error)
+    }
+  })
+}
+
 // Mock session storage - start with a test user signed in
 const testUser = createMockUser('test@example.com', 'test-user-1')
 const testSession = createMockSession(testUser)
@@ -117,6 +131,9 @@ export const mockAuth = {
     // Store in localStorage for persistence
     localStorage.setItem('mock-auth-session', JSON.stringify(mockSession))
     
+    // Notify listeners
+    notifyAuthStateChange('SIGNED_IN', mockSession)
+    
     console.log('Mock user signed in:', { email: user.email, id: user.id })
     return { error: null }
   },
@@ -129,6 +146,9 @@ export const mockAuth = {
     currentUser = null
     currentSession = null
     localStorage.removeItem('mock-auth-session')
+    
+    // Notify listeners
+    notifyAuthStateChange('SIGNED_OUT', null)
     
     console.log('Mock user signed out')
     return { error: null }
@@ -162,9 +182,16 @@ export const mockAuth = {
   
   // Mock auth state change listener
   onAuthStateChange: (callback: (event: string, session: Session | null) => void) => {
+    // Add callback to the list
+    authStateChangeCallbacks.push(callback)
+    
     // Return a mock subscription
     const subscription = {
       unsubscribe: () => {
+        const index = authStateChangeCallbacks.indexOf(callback)
+        if (index > -1) {
+          authStateChangeCallbacks.splice(index, 1)
+        }
         console.log('Mock auth state change listener unsubscribed')
       }
     }
