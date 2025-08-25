@@ -1,13 +1,6 @@
 // Mock authentication system for testing when Supabase is unavailable
 import { User, Session, AuthError } from '@supabase/supabase-js'
 
-// Mock user data
-const mockUsers: Array<{ email: string; password: string; id: string }> = []
-
-// Mock session storage
-let currentSession: Session | null = null
-let currentUser: User | null = null
-
 // Generate mock user ID
 const generateMockId = () => `mock-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
@@ -35,6 +28,22 @@ const createMockSession = (user: User): Session => ({
   token_type: 'bearer',
   user
 })
+
+// Mock user data with a default test user
+const mockUsers: Array<{ email: string; password: string; id: string }> = [
+  { email: 'test@example.com', password: 'password123', id: 'test-user-1' }
+]
+
+// Mock session storage - start with a test user signed in
+const testUser = createMockUser('test@example.com', 'test-user-1')
+const testSession = createMockSession(testUser)
+let currentSession: Session | null = testSession
+let currentUser: User | null = testUser
+
+// Store test session in localStorage
+if (typeof localStorage !== 'undefined') {
+  localStorage.setItem('mock-auth-session', JSON.stringify(testSession))
+}
 
 export const mockAuth = {
   // Mock sign up

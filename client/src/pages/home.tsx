@@ -7,9 +7,10 @@ import CollectionModal from "@/components/collection-modal";
 import DeckBuilderModal from "@/components/deck-builder-modal";
 import WishlistModal from "@/components/wishlist-modal";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { CardScannerModal } from "@/components/card-scanner-modal";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
-import { Bookmark, User, Wand2, Book, BookOpen, LogIn, LogOut, Heart } from "lucide-react";
+import { Bookmark, User, Wand2, Book, BookOpen, LogIn, LogOut, Heart, Camera } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { scryfallApi } from "@/lib/api";
@@ -27,6 +28,7 @@ export default function Home() {
   const [showDeckBuilderModal, setShowDeckBuilderModal] = useState(false);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showScannerModal, setShowScannerModal] = useState(false);
 
   const { data: searchResults, isLoading, error } = useQuery({
     queryKey: ["cards/search", filters, currentPage],
@@ -109,6 +111,17 @@ export default function Home() {
                   <div className="absolute inset-0 bg-purple-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
               </Link>
+              
+              <Button 
+                onClick={() => setShowScannerModal(true)}
+                className="relative bg-blue-600 hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
+                data-testid="button-scanner"
+              >
+                <Camera className="mr-1 lg:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Scan Card</span>
+                <span className="sm:hidden">Scan</span>
+                <div className="absolute inset-0 bg-blue-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+              </Button>
               
               {user ? (
                 <>
@@ -254,6 +267,15 @@ export default function Home() {
               </Link>
               {user && (
                 <>
+                  <Button 
+                    size="sm"
+                    onClick={() => setShowScannerModal(true)}
+                    className="relative bg-blue-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                    data-testid="button-scanner-mobile"
+                  >
+                    <Camera className="mr-1.5 h-4 w-4" />
+                    Scan
+                  </Button>
                   <Button 
                     size="sm"
                     onClick={() => setShowDeckBuilderModal(true)}
@@ -445,6 +467,13 @@ export default function Home() {
         <AuthModal
           open={showAuthModal}
           onOpenChange={setShowAuthModal}
+        />
+      )}
+
+      {showScannerModal && (
+        <CardScannerModal
+          open={showScannerModal}
+          onOpenChange={setShowScannerModal}
         />
       )}
     </div>
