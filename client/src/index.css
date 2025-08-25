@@ -81,7 +81,7 @@
 /* New Color Scheme Integration */
 :root {
   --accent: #FF3B3F;         /* Candy Red */
-  --background: #F99A72;     /* Peach Orange */
+  --app-background: #F99A72; /* Peach Orange - renamed to avoid conflict */
   --highlight: #FFF75A;      /* Daffodil Yellow */
   --text-primary: #7F5A83;   /* Dark Lavender */
   --foil-glow: rgba(255, 59, 63, 0.4);
@@ -98,10 +98,10 @@
 
 /* New Color Scheme Utility Classes */
 .bg-accent { background-color: var(--accent); }
-.bg-background { background-color: var(--background); }
+.bg-app-background { background-color: var(--app-background); }
 .bg-highlight { background-color: var(--highlight); }
 .text-accent { color: var(--accent); }
-.text-background { color: var(--background); }
+.text-app-background { color: var(--app-background); }
 .text-highlight { color: var(--highlight); }
 .text-primary { color: var(--text-primary); }
 .border-accent { border-color: var(--accent); }
