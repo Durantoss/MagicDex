@@ -9,6 +9,7 @@ import RulesPage from "@/pages/rules";
 import Dictionary from "@/pages/dictionary";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
+import { FoilTest } from "@/components/foil-test";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/rules" component={RulesPage} />
       <Route path="/dictionary" component={Dictionary} />
       <Route path="/profile" component={Profile} />
+      <Route path="/foil-test" component={FoilTest} />
       <Route component={NotFound} />
     </Switch>
   );

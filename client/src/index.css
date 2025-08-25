@@ -78,6 +78,15 @@
   --glass: rgba(255, 255, 255, 0.1);
 }
 
+/* New Color Scheme Integration */
+:root {
+  --color-accent: #FF3B3F;
+  --color-background: #F99A72;
+  --color-highlight: #FFF75A;
+  --color-text: #7F5A83;
+  --color-foil-glow: rgba(255, 59, 63, 0.6);
+}
+
 .bg-mtg-primary { background-color: var(--mtg-primary); }
 .bg-mtg-secondary { background-color: var(--mtg-secondary); }
 .bg-mtg-accent { background-color: var(--mtg-accent); }
@@ -86,6 +95,19 @@
 .bg-glass { background-color: var(--glass); }
 .border-glass { border-color: var(--glass); }
 .hover\:bg-glass:hover { background-color: var(--glass); }
+
+/* New Color Scheme Utility Classes */
+.bg-color-accent { background-color: var(--color-accent); }
+.bg-color-background { background-color: var(--color-background); }
+.bg-color-highlight { background-color: var(--color-highlight); }
+.text-color-accent { color: var(--color-accent); }
+.text-color-background { color: var(--color-background); }
+.text-color-highlight { color: var(--color-highlight); }
+.text-color-text { color: var(--color-text); }
+.border-color-accent { border-color: var(--color-accent); }
+.border-color-highlight { border-color: var(--color-highlight); }
+.hover\:bg-color-accent:hover { background-color: var(--color-accent); }
+.hover\:text-color-highlight:hover { color: var(--color-highlight); }
 
 .text-gradient-primary {
   background: linear-gradient(135deg, #e94560, #f39c12);
@@ -99,12 +121,12 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: linear-gradient(45deg, #fcd34d, #fbbf24);
-  color: #1f2937;
+  background: linear-gradient(45deg, var(--color-highlight), var(--color-accent));
+  color: var(--color-text);
   font-weight: bold;
   padding: 4px 8px;
   border-radius: 6px;
-  box-shadow: 0 0 6px rgba(252, 211, 77, 0.6);
+  box-shadow: 0 0 6px var(--color-foil-glow);
   font-size: 0.75rem;
   z-index: 10;
 }
@@ -121,7 +143,7 @@
 .foil-toggle input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #fbbf24;
+  accent-color: var(--color-highlight);
 }
 
 /* Quantity Tracker Styling */
@@ -187,7 +209,7 @@
 }
 
 .finish-label.foil {
-  color: #fbbf24;
+  color: var(--color-highlight);
 }
 
 .price-display {
@@ -212,7 +234,7 @@
   background: linear-gradient(
     45deg,
     transparent 30%,
-    rgba(252, 211, 77, 0.1) 50%,
+    var(--color-foil-glow) 50%,
     transparent 70%
   );
   transform: rotate(45deg);
@@ -250,7 +272,7 @@
   background: linear-gradient(
     45deg,
     transparent 30%,
-    rgba(252, 211, 77, 0.3) 50%,
+    var(--color-foil-glow) 50%,
     transparent 70%
   );
   transform: translateX(-100%) rotate(45deg);
@@ -287,7 +309,7 @@
 }
 
 .stat-foil {
-  color: #fbbf24;
+  color: var(--color-highlight);
 }
 
 /* Filter enhancements for foil */
