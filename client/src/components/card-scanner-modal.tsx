@@ -406,7 +406,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     }
   };
 
-  const handleAddCard = async (cardData: { name: string; detectedText: string; scryfallData?: any }) => {
+  const handleAddCard = async (card: any) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -417,26 +417,42 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     }
 
     try {
-      // Here you would typically:
-      // 1. Search for the card in your database or Scryfall API
-      // 2. Add it to the user's collection
-      // For now, we'll just log it and show a success message
+      // Add card to user's collection via Supabase
+      const { error } = await supabase
+        .from('user_cards')
+        .insert({
+          user_id: user.id,
+          scryfall_id: card.id,
+          card_name: card.name,
+          set_code: card.set,
+          set_name: card.set_name,
+          rarity: card.rarity,
+          mana_cost: card.mana_cost,
+          type_line: card.type_line,
+          oracle_text: card.oracle_text,
+          power: card.power,
+          toughness: card.toughness,
+          image_url: card.image_uris?.normal || card.image_uris?.large,
+          price_usd: card.prices?.usd ? parseFloat(card.prices.usd) : null,
+          quantity: 1
+        });
 
-      console.log("Card added:", cardData);
+      if (error) {
+        throw error;
+      }
       
       toast({
-        title: "Card detected!",
-        description: `Found: ${cardData.name}`,
+        title: "Card added to collection!",
+        description: `${card.name} has been added to your collection.`,
       });
 
-      // You can integrate with your existing collection logic here
-      // For example, calling your Supabase collection insert function
+      console.log("Card successfully added to collection:", card.name);
 
     } catch (err) {
-      console.error("Error adding card:", err);
+      console.error("Error adding card to collection:", err);
       toast({
-        title: "Error",
-        description: "Failed to add card to collection.",
+        title: "Error adding card",
+        description: "Failed to add card to your collection. Please try again.",
         variant: "destructive",
       });
     }
@@ -712,6 +728,17 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
                       >
                         <Eye className="h-3 w-3 mr-1" />
                         View
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddCard(card);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add
                       </Button>
                     </div>
                   </div>
