@@ -86,15 +86,35 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     const ctx = canvas.getContext("2d");
     if (!ctx) return canvas;
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    // Create a new canvas focused on the card name area (top 30% of the card)
+    const nameAreaHeight = Math.floor(canvas.height * 0.3);
+    const nameCanvas = document.createElement("canvas");
+    nameCanvas.width = canvas.width;
+    nameCanvas.height = nameAreaHeight;
+    const nameCtx = nameCanvas.getContext("2d");
+    
+    if (!nameCtx) return canvas;
+
+    // Copy the top portion of the original canvas (where card names are located)
+    nameCtx.drawImage(canvas, 0, 0, canvas.width, nameAreaHeight, 0, 0, canvas.width, nameAreaHeight);
+
+    // Get image data from the name area
+    const imageData = nameCtx.getImageData(0, 0, nameCanvas.width, nameCanvas.height);
     const data = imageData.data;
 
-    // Convert to grayscale and enhance contrast
+    // Enhanced preprocessing for better text recognition
     for (let i = 0; i < data.length; i += 4) {
       const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
       
-      // Enhance contrast
-      const enhanced = gray < 128 ? Math.max(0, gray - 30) : Math.min(255, gray + 30);
+      // More aggressive contrast enhancement for text
+      let enhanced;
+      if (gray < 100) {
+        enhanced = Math.max(0, gray - 50); // Make dark text darker
+      } else if (gray > 180) {
+        enhanced = 255; // Make light backgrounds pure white
+      } else {
+        enhanced = gray < 128 ? 0 : 255; // Binary threshold for better text clarity
+      }
       
       data[i] = enhanced;     // Red
       data[i + 1] = enhanced; // Green
@@ -102,8 +122,23 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
       // Alpha channel remains unchanged
     }
 
-    ctx.putImageData(imageData, 0, 0);
-    return canvas;
+    nameCtx.putImageData(imageData, 0, 0);
+    
+    // Scale up the name area for better OCR recognition
+    const scaledCanvas = document.createElement("canvas");
+    scaledCanvas.width = nameCanvas.width * 2;
+    scaledCanvas.height = nameCanvas.height * 2;
+    const scaledCtx = scaledCanvas.getContext("2d");
+    
+    if (scaledCtx) {
+      // Use smooth scaling for better text quality
+      scaledCtx.imageSmoothingEnabled = true;
+      scaledCtx.imageSmoothingQuality = 'high';
+      scaledCtx.drawImage(nameCanvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      return scaledCanvas;
+    }
+
+    return nameCanvas;
   };
 
   const captureFrame = (): HTMLCanvasElement | null => {
@@ -506,10 +541,24 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
                   </div>
                 )}
 
-                {/* Scan guide overlay */}
+                {/* Enhanced scan guide overlay with name area focus */}
                 <div className="absolute inset-4 border-2 border-dashed border-white/50 rounded-lg pointer-events-none">
                   <div className="absolute -top-6 left-0 text-white text-sm bg-black/50 px-2 py-1 rounded">
                     Position card within frame
+                  </div>
+                  
+                  {/* Card name area highlight - top 30% of the frame */}
+                  <div className="absolute top-0 left-0 right-0 h-[30%] border-2 border-solid border-green-400/70 rounded-t-lg bg-green-400/10">
+                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-green-400 text-xs bg-black/70 px-2 py-1 rounded whitespace-nowrap">
+                      📝 Card Name Area - Focus Here
+                    </div>
+                  </div>
+                  
+                  {/* Rules text area (dimmed) */}
+                  <div className="absolute top-[30%] left-0 right-0 bottom-0 bg-red-500/5 border border-red-400/30 rounded-b-lg">
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-red-400/70 text-xs">
+                      Rules text (ignored)
+                    </div>
                   </div>
                 </div>
               </>
