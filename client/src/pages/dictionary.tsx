@@ -333,17 +333,17 @@ export default function Dictionary() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* AI Q&A Section */}
-        <div className="bg-gradient-to-r from-mtg-primary/10 to-purple-600/10 border border-mtg-primary/20 rounded-2xl p-6 mb-8 shadow-magical">
+        <div className="bg-gradient-to-r from-mtg-primary/10 to-purple-600/10 border border-mtg-primary/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-magical">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="relative">
-              <MessageCircle className="h-6 w-6 text-mtg-primary" />
+            <div className="relative flex-shrink-0">
+              <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-mtg-primary" />
               <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-purple-400 animate-pulse" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Ask the AI Wizard</h2>
-              <p className="text-sm text-slate-400">Receive detailed explanations of Magic concepts with practical examples</p>
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-white">Ask the AI Wizard</h2>
+              <p className="text-xs sm:text-sm text-slate-400">Receive detailed explanations of Magic concepts with practical examples</p>
             </div>
           </div>
 
@@ -353,8 +353,8 @@ export default function Dictionary() {
                 type="text"
                 value={aiQuestion}
                 onChange={(e) => setAiQuestion(e.target.value)}
-                placeholder="Ask about any Magic concept... (e.g., 'Explain flying mechanics' or 'How does trample function in combat?')"
-                className="w-full h-12 bg-slate-800/50 border-slate-600 rounded-xl px-4 py-3 pr-16 text-white text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-mtg-primary"
+                placeholder="Ask about any Magic concept... (e.g., 'Explain flying mechanics')"
+                className="w-full h-10 sm:h-12 bg-slate-800/50 border-slate-600 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 pr-12 sm:pr-16 text-white text-sm sm:text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-mtg-primary"
                 disabled={aiQuestionMutation.isPending}
                 data-testid="input-ai-question"
               />
@@ -362,7 +362,7 @@ export default function Dictionary() {
                 type="submit"
                 size="sm"
                 disabled={!aiQuestion.trim() || aiQuestionMutation.isPending}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-mtg-primary hover:bg-mtg-primary/80 text-white px-3 py-2 rounded-lg transition-all duration-200"
+                className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-mtg-primary hover:bg-mtg-primary/80 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-md sm:rounded-lg transition-all duration-200 touch-manipulation"
                 data-testid="button-ask-ai"
               >
                 {aiQuestionMutation.isPending ? (
@@ -374,13 +374,13 @@ export default function Dictionary() {
             </div>
 
             {aiResponse && (
-              <div className="bg-slate-800/30 border border-slate-600/50 rounded-xl p-4">
-                <div className="flex items-start space-x-3">
-                  <div className="bg-gradient-to-r from-mtg-primary to-purple-600 rounded-full p-2 flex-shrink-0 mt-1">
-                    <Sparkles className="h-4 w-4 text-white" />
+              <div className="bg-slate-800/30 border border-slate-600/50 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                <div className="flex items-start space-x-2 sm:space-x-3">
+                  <div className="bg-gradient-to-r from-mtg-primary to-purple-600 rounded-full p-1.5 sm:p-2 flex-shrink-0 mt-1">
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-white text-base leading-relaxed" data-testid="text-ai-response">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm sm:text-base leading-relaxed" data-testid="text-ai-response">
                       {aiResponse}
                     </p>
                   </div>
@@ -391,7 +391,7 @@ export default function Dictionary() {
         </div>
 
         {/* Search and Filter Section */}
-        <div className="bg-glass border-glass rounded-2xl p-6 mb-8 shadow-card">
+        <div className="bg-glass border-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-card">
           <div className="space-y-6">
             {/* Search Bar */}
             <div className="relative">
@@ -401,26 +401,26 @@ export default function Dictionary() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for Magic words..."
-                  className="w-full h-12 bg-slate-800/50 border-slate-600 rounded-xl px-4 py-3 pl-12 text-white text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-mtg-primary"
+                  className="w-full h-10 sm:h-12 bg-slate-800/50 border-slate-600 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 pl-10 sm:pl-12 text-white text-sm sm:text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-mtg-primary"
                   data-testid="input-dictionary-search"
                 />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-slate-400" />
               </div>
             </div>
 
             {/* Category Filter */}
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+              <h3 className="text-xs sm:text-sm font-semibold text-slate-300 uppercase tracking-wider">
                 Filter by Type
               </h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {categories.map((category) => (
                   <Button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
                     variant="ghost"
                     size="sm"
-                    className={`transition-all duration-200 ${
+                    className={`transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 touch-manipulation ${
                       selectedCategory === category
                         ? "bg-mtg-primary text-white shadow-glow"
                         : "bg-slate-800/50 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-600"
@@ -428,7 +428,8 @@ export default function Dictionary() {
                     data-testid={`button-category-${category.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <span className="mr-1">{getCategoryIcon(category)}</span>
-                    {category}
+                    <span className="hidden sm:inline">{category}</span>
+                    <span className="sm:hidden">{category.split(' ')[0]}</span>
                   </Button>
                 ))}
               </div>
@@ -437,44 +438,45 @@ export default function Dictionary() {
         </div>
 
         {/* Results Counter */}
-        <div className="mb-6">
-          <p className="text-slate-400" data-testid="text-results-count">
+        <div className="mb-4 sm:mb-6">
+          <p className="text-slate-400 text-sm sm:text-base" data-testid="text-results-count">
             Found <span className="text-gradient-accent font-bold">{filteredTerms.length}</span> Magic words
           </p>
         </div>
 
         {/* Dictionary Terms */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {filteredTerms.length > 0 ? (
             filteredTerms.map((term, index) => (
               <div
                 key={term.term}
-                className="bg-glass border-glass rounded-xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 hover:scale-[1.02]"
+                className="bg-glass border-glass rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300 hover:scale-[1.01] sm:hover:scale-[1.02]"
                 data-testid={`dictionary-term-${term.term.toLowerCase().replace(/\s+/g, '-')}`}
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <h3 className="text-xl font-bold text-white group-hover:text-gradient-primary transition-all duration-300">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 space-y-2 sm:space-y-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                    <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-gradient-primary transition-all duration-300">
                       {term.term}
                     </h3>
                     <Badge 
                       variant="outline" 
-                      className="bg-mtg-secondary/20 text-mtg-accent border-mtg-secondary text-xs"
+                      className="bg-mtg-secondary/20 text-mtg-accent border-mtg-secondary text-xs self-start"
                     >
                       <span className="mr-1">{getCategoryIcon(term.category)}</span>
-                      {term.category}
+                      <span className="hidden sm:inline">{term.category}</span>
+                      <span className="sm:hidden">{term.category.split(' ')[0]}</span>
                     </Badge>
                   </div>
                 </div>
                 
-                <p className="text-slate-300 text-base leading-relaxed font-medium">
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-medium">
                   {term.definition}
                 </p>
                 
                 {/* Decorative element */}
-                <div className="mt-4 flex items-center space-x-2 opacity-50">
-                  <div className="w-2 h-2 bg-gradient-accent rounded-full"></div>
+                <div className="mt-3 sm:mt-4 flex items-center space-x-2 opacity-50">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-accent rounded-full"></div>
                   <div className="flex-1 h-px bg-gradient-to-r from-slate-600 to-transparent"></div>
                 </div>
               </div>
@@ -493,12 +495,12 @@ export default function Dictionary() {
         </div>
 
         {/* Educational Footer */}
-        <div className="mt-12 bg-gradient-to-r from-mtg-primary/10 to-mtg-accent/10 border border-mtg-primary/20 rounded-2xl p-6">
-          <div className="flex items-center space-x-3 mb-3">
-            <Zap className="h-6 w-6 text-mtg-primary" />
-            <h3 className="text-lg font-bold text-white">Strategy Guide</h3>
+        <div className="mt-8 sm:mt-12 bg-gradient-to-r from-mtg-primary/10 to-mtg-accent/10 border border-mtg-primary/20 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+          <div className="flex items-center space-x-2 sm:space-x-3 mb-3">
+            <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-mtg-primary flex-shrink-0" />
+            <h3 className="text-base sm:text-lg font-bold text-white">Strategy Guide</h3>
           </div>
-          <p className="text-slate-300 leading-relaxed">
+          <p className="text-slate-300 leading-relaxed text-sm sm:text-base">
             Beginning your Magic journey? Focus first on mastering <strong>creatures</strong>, <strong>spells</strong>, and <strong>mana management</strong>. 
             These fundamental concepts form the foundation of strategic gameplay. After understanding the basics, advance to <strong>combat mechanics</strong> and <strong>timing interactions</strong>.
           </p>

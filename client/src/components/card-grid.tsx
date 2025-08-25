@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { collectionApi } from "@/lib/api";
 
 interface CardGridProps {
   cards: ScryfallCard[];
@@ -26,30 +27,40 @@ export default function CardGrid({
 }: CardGridProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Get user collection
   const { data: collection = [] } = useQuery({
-    queryKey: ["/api/collection"],
+    queryKey: ["collection", user?.id],
+    queryFn: () => user ? collectionApi.getCollection(user.id) : [],
+    enabled: !!user,
   });
 
   // Add to collection mutation
   const addToCollectionMutation = useMutation({
     mutationFn: async (card: ScryfallCard) => {
-      const response = await apiRequest("POST", "/api/collection", {
-        cardId: card.id,
-        quantity: 1,
-        cardData: card,
-      });
-      return response.json();
+      if (!user) throw new Error("User not authenticated");
+      
+      return await collectionApi.addToCollection(
+        user.id,
+        card.id,
+        1, // normal quantity
+        0, // foil quantity
+        {
+          ...card,
+          image_url: card.image_uris?.normal || card.image_uris?.large,
+        }
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/collection"] });
+      queryClient.invalidateQueries({ queryKey: ["collection", user?.id] });
       toast({
         title: "Added to Collection",
         description: "Card has been added to your collection.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Collection add error:", error);
       toast({
         title: "Error",
         description: "Failed to add card to collection.",
@@ -61,17 +72,19 @@ export default function CardGrid({
   // Remove from collection mutation
   const removeFromCollectionMutation = useMutation({
     mutationFn: async (cardId: string) => {
-      const response = await apiRequest("DELETE", `/api/collection/${cardId}`);
-      return response.json();
+      if (!user) throw new Error("User not authenticated");
+      
+      return await collectionApi.removeFromCollection(user.id, cardId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/collection"] });
+      queryClient.invalidateQueries({ queryKey: ["collection", user?.id] });
       toast({
         title: "Removed from Collection",
         description: "Card has been removed from your collection.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Collection remove error:", error);
       toast({
         title: "Error",
         description: "Failed to remove card from collection.",
@@ -81,11 +94,20 @@ export default function CardGrid({
   });
 
   const isInCollection = (cardId: string) => {
-    return Array.isArray(collection) && collection.some((item: any) => item.cardId === cardId);
+    return Array.isArray(collection) && collection.some((item: any) => item.card_id === cardId);
   };
 
   const handleCollectionToggle = (e: React.MouseEvent, card: ScryfallCard) => {
     e.stopPropagation();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to add cards to your collection.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (isInCollection(card.id)) {
       removeFromCollectionMutation.mutate(card.id);
@@ -183,10 +205,12 @@ export default function CardGrid({
                         ? "bg-gradient-accent text-white shadow-glow hover:shadow-magical"
                         : "bg-glass border-glass text-mtg-accent hover:bg-gradient-accent hover:text-white hover:shadow-glow"
                     }`}
-                    disabled={addToCollectionMutation.isPending || removeFromCollectionMutation.isPending}
+                    disabled={addToCollectionMutation.isPending || removeFromCollectionMutation.isPending || !user}
                     data-testid={`button-collection-toggle-${card.id}`}
                   >
-                    {isInCollection(card.id) ? 
+                    {addToCollectionMutation.isPending || removeFromCollectionMutation.isPending ? (
+                      <div className="animate-spin w-3 h-3 sm:w-3.5 sm:h-3.5 border border-white border-t-transparent rounded-full" />
+                    ) : isInCollection(card.id) ? 
                       <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-pulse" /> : 
                       <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:rotate-90 transition-transform duration-300" />
                     }

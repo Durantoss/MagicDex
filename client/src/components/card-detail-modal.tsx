@@ -153,32 +153,32 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-screen bg-mtg-secondary border border-slate-700 text-white overflow-y-auto">
-        <div className="flex flex-col lg:flex-row">
+      <DialogContent className="max-w-4xl max-h-screen bg-mtg-secondary border border-slate-700 text-white overflow-y-auto modal-responsive">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-0">
           {/* Card Image */}
-          <div className="lg:w-1/2 p-6 relative">
+          <div className="lg:w-1/2 p-3 sm:p-6 relative">
             <img
               src={getCardImageUrl(selectedVariation, "large")}
               alt={selectedVariation.name}
-              className="w-full rounded-lg shadow-lg"
+              className="w-full max-w-sm mx-auto lg:max-w-none rounded-lg shadow-lg"
               data-testid="img-card-detail"
             />
             {/* Foil badge if card has foil availability */}
-            <FoilBadge card={selectedVariation} size="lg" className="absolute top-8 right-8" />
+            <FoilBadge card={selectedVariation} size="lg" className="absolute top-5 sm:top-8 right-5 sm:right-8" />
           </div>
 
           {/* Card Details */}
-          <div className="lg:w-1/2 p-6 space-y-6">
+          <div className="lg:w-1/2 p-3 sm:p-6 space-y-4 sm:space-y-6">
             <DialogHeader>
-              <div className="flex items-center justify-between">
-                <DialogTitle className="text-3xl font-bold text-white" data-testid="text-card-name">
+              <div className="flex items-start justify-between gap-2">
+                <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight" data-testid="text-card-name">
                   {card.name}
                 </DialogTitle>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="text-slate-400 hover:text-white"
+                  className="text-slate-400 hover:text-white flex-shrink-0 touch-manipulation"
                   data-testid="button-close-modal"
                 >
                   <X className="h-5 w-5" />
@@ -188,57 +188,57 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
 
             <div className="space-y-6">
               {/* Core Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {/* Mana Cost */}
-                <div className="bg-mtg-gray p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Mana Cost</label>
-                  <div className="flex items-center space-x-2">
-                    <Badge className={`text-lg px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-mana-cost">
+                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Mana Cost</label>
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+                    <Badge className={`text-sm sm:text-lg px-2 sm:px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-mana-cost">
                       {formatManaCost(card.mana_cost) || card.cmc}
                     </Badge>
-                    <span className="text-slate-400 text-sm">CMC: {card.cmc}</span>
+                    <span className="text-slate-400 text-xs sm:text-sm">CMC: {card.cmc}</span>
                   </div>
                 </div>
 
                 {/* Mana Type/Colors */}
-                <div className="bg-mtg-gray p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Mana Type</label>
+                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Mana Type</label>
                   <div className="flex flex-col space-y-2">
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center flex-wrap gap-1">
                       {getColorSymbols(card.colors).map((colorInfo, index) => (
                         <span 
                           key={index} 
-                          className={`px-2 py-1 rounded text-xs font-bold border ${colorInfo.color}`}
+                          className={`px-1.5 sm:px-2 py-1 rounded text-xs font-bold border ${colorInfo.color}`}
                           data-testid={`color-symbol-${colorInfo.symbol.toLowerCase()}`}
                         >
                           {colorInfo.symbol}
                         </span>
                       ))}
                     </div>
-                    <span className="text-white text-sm" data-testid="text-mana-type">
+                    <span className="text-white text-xs sm:text-sm" data-testid="text-mana-type">
                       {getManaTypeColors(card.colors)}
                     </span>
                   </div>
                 </div>
 
                 {/* Card Type */}
-                <div className="bg-mtg-gray p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Card Type</label>
-                  <p className="text-white font-medium" data-testid="text-type-line">{card.type_line}</p>
+                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg sm:col-span-2">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Card Type</label>
+                  <p className="text-white font-medium text-sm sm:text-base" data-testid="text-type-line">{card.type_line}</p>
                 </div>
 
                 {/* Rarity */}
-                <div className="bg-mtg-gray p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Rarity</label>
-                  <Badge className={`capitalize text-sm px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-rarity">
+                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg sm:col-span-2">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Rarity</label>
+                  <Badge className={`capitalize text-xs sm:text-sm px-2 sm:px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-rarity">
                     {card.rarity}
                   </Badge>
                 </div>
               </div>
 
               {/* Enhanced Market Value Section with Foil Comparison */}
-              <div className="bg-mtg-gray p-4 rounded-lg">
-                <label className="block text-sm font-medium text-slate-300 mb-3">Market Value</label>
+              <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg">
+                <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-3">Market Value</label>
                 <PriceComparison card={selectedVariation} showDifference={true} />
                 
                 {/* Foil availability indicator */}
@@ -250,9 +250,9 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
               {/* Oracle Text */}
               {card.oracle_text && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Oracle Text</label>
-                  <div className="bg-mtg-gray p-4 rounded-lg">
-                    <p className="text-white whitespace-pre-wrap leading-relaxed" data-testid="text-oracle-text">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Oracle Text</label>
+                  <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg">
+                    <p className="text-white whitespace-pre-wrap leading-relaxed text-sm sm:text-base" data-testid="text-oracle-text">
                       {card.oracle_text}
                     </p>
                   </div>
@@ -410,25 +410,25 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
             </div>
 
             {/* Action Buttons */}
-            <div className="flex space-x-3 pt-4 border-t border-slate-600">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-slate-600">
               <Button
                 onClick={() => addToCollectionMutation.mutate()}
                 disabled={addToCollectionMutation.isPending || isInCollection || (quantities.normal === 0 && quantities.foil === 0)}
-                className="flex-1 bg-mtg-accent hover:bg-mtg-accent/90 text-white py-3 px-4 rounded-lg transition-colors duration-200"
+                className="flex-1 bg-mtg-accent hover:bg-mtg-accent/90 text-white py-3 px-4 rounded-lg transition-colors duration-200 touch-manipulation btn-touch"
                 data-testid="button-add-to-collection"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {isInCollection ? "Update Collection" : "Add to Collection"}
+                <span className="text-sm sm:text-base">{isInCollection ? "Update Collection" : "Add to Collection"}</span>
               </Button>
               <Button
                 onClick={() => addToWishlistMutation.mutate()}
                 disabled={addToWishlistMutation.isPending || isInWishlist || !user || (quantities.normal === 0 && quantities.foil === 0)}
                 variant="outline"
-                className="flex-1 bg-mtg-primary hover:bg-mtg-primary/90 text-white py-3 px-4 rounded-lg transition-colors duration-200"
+                className="flex-1 bg-mtg-primary hover:bg-mtg-primary/90 text-white py-3 px-4 rounded-lg transition-colors duration-200 touch-manipulation btn-touch"
                 data-testid="button-add-to-wishlist"
               >
                 <Heart className="mr-2 h-4 w-4" />
-                {isInWishlist ? "Update Wishlist" : "Add to Wishlist"}
+                <span className="text-sm sm:text-base">{isInWishlist ? "Update Wishlist" : "Add to Wishlist"}</span>
               </Button>
             </div>
           </div>

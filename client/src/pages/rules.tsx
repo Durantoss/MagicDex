@@ -195,26 +195,26 @@ export default function RulesPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Rules Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <Card className="bg-slate-800 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-white flex items-center text-lg sm:text-xl">
                   <Book className="mr-2 h-5 w-5 text-amber-400" />
                   Magic: The Gathering Rules
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-slate-400 text-sm sm:text-base">
                   Learn the fundamentals of Magic with interactive term definitions
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[800px] pr-4">
+              <CardContent className="p-4 sm:p-6">
+                <ScrollArea className="h-[600px] sm:h-[800px] pr-2 sm:pr-4">
                   {rulesData.map((section, sectionIndex) => (
-                    <div key={sectionIndex} className="mb-8">
-                      <div className="flex items-center mb-4">
-                        <Badge variant="secondary" className="bg-amber-600 text-white">
+                    <div key={sectionIndex} className="mb-6 sm:mb-8">
+                      <div className="flex items-center mb-3 sm:mb-4">
+                        <Badge variant="secondary" className="bg-amber-600 text-white text-xs sm:text-sm">
                           {section.category}
                         </Badge>
                       </div>
@@ -224,12 +224,12 @@ export default function RulesPage() {
                           <AccordionItem 
                             key={ruleIndex} 
                             value={`${sectionIndex}-${ruleIndex}`}
-                            className="border border-slate-600 rounded-lg px-4"
+                            className="border border-slate-600 rounded-lg px-3 sm:px-4"
                           >
-                            <AccordionTrigger className="text-white hover:text-amber-400 text-left">
+                            <AccordionTrigger className="text-white hover:text-amber-400 text-left text-sm sm:text-base py-3 sm:py-4">
                               {rule.title}
                             </AccordionTrigger>
-                            <AccordionContent className="text-slate-300 pb-4">
+                            <AccordionContent className="text-slate-300 pb-3 sm:pb-4 text-sm sm:text-base">
                               <InteractiveText>{rule.content}</InteractiveText>
                             </AccordionContent>
                           </AccordionItem>
@@ -243,30 +243,30 @@ export default function RulesPage() {
           </div>
 
           {/* Q&A Section */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-1 lg:order-2">
             <Card className="bg-slate-800 border-slate-700 h-fit">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-white flex items-center text-lg sm:text-xl">
                   <MessageCircle className="mr-2 h-5 w-5 text-blue-400" />
                   Ask a Rules Question
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-slate-400 text-sm sm:text-base">
                   Get instant answers to your Magic rules questions
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <form onSubmit={handleSubmitQuestion} className="space-y-4">
                   <Input
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="e.g., How does first strike work?"
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 h-10 sm:h-12 text-sm sm:text-base"
                     data-testid="input-rules-question"
                   />
                   <Button 
                     type="submit" 
                     disabled={askQuestionMutation.isPending || !question.trim()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white touch-manipulation btn-touch text-sm sm:text-base"
                     data-testid="button-ask-question"
                   >
                     {askQuestionMutation.isPending ? (
@@ -280,15 +280,15 @@ export default function RulesPage() {
 
                 {answers.length > 0 && (
                   <div className="mt-6 space-y-4">
-                    <h3 className="text-white font-semibold">Recent Questions</h3>
-                    <ScrollArea className="h-[400px]">
-                      <div className="space-y-4 pr-4">
+                    <h3 className="text-white font-semibold text-base sm:text-lg">Recent Questions</h3>
+                    <ScrollArea className="h-[300px] sm:h-[400px]">
+                      <div className="space-y-3 sm:space-y-4 pr-2 sm:pr-4">
                         {answers.map((qa, index) => (
-                          <div key={index} className="bg-slate-700 rounded-lg p-4 space-y-2">
-                            <div className="text-blue-300 font-medium text-sm">
+                          <div key={index} className="bg-slate-700 rounded-lg p-3 sm:p-4 space-y-2">
+                            <div className="text-blue-300 font-medium text-xs sm:text-sm">
                               Q: {qa.question}
                             </div>
-                            <div className="text-slate-300 text-sm leading-relaxed">
+                            <div className="text-slate-300 text-xs sm:text-sm leading-relaxed">
                               A: {qa.answer}
                             </div>
                           </div>
