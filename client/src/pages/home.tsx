@@ -1,4 +1,4 @@
-import { useState } from "react";
+                                                                                                                                                                        import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import SearchBar from "@/components/search-bar";
 import CardGrid from "@/components/card-grid";
@@ -265,17 +265,17 @@ export default function Home() {
                   Dictionary
                 </Button>
               </Link>
+              <Button 
+                size="sm"
+                onClick={() => setShowScannerModal(true)}
+                className="relative bg-blue-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                data-testid="button-scanner-mobile"
+              >
+                <Camera className="mr-1.5 h-4 w-4" />
+                Scan
+              </Button>
               {user && (
                 <>
-                  <Button 
-                    size="sm"
-                    onClick={() => setShowScannerModal(true)}
-                    className="relative bg-blue-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
-                    data-testid="button-scanner-mobile"
-                  >
-                    <Camera className="mr-1.5 h-4 w-4" />
-                    Scan
-                  </Button>
                   <Button 
                     size="sm"
                     onClick={() => setShowDeckBuilderModal(true)}

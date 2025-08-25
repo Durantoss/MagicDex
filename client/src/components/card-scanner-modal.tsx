@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, X, Scan, Loader2 } from "lucide-react";
+import { Camera, X, Scan, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import Tesseract from 'tesseract.js';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,12 @@ interface CardScannerModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface DetectedCard {
+  name: string;
+  confidence: number;
+  scryfallData?: any;
+}
+
 export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -20,7 +26,9 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
   const [isScanning, setIsScanning] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [detectedText, setDetectedText] = useState<string>("");
+  const [detectedCard, setDetectedCard] = useState<DetectedCard | null>(null);
   const [error, setError] = useState<string>("");
+  const [scanProgress, setScanProgress] = useState<string>("");
 
   // Initialize camera when modal opens
   useEffect(() => {
@@ -39,7 +47,11 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     try {
       setError("");
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
+        video: { 
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       });
       
       if (videoRef.current) {
@@ -62,6 +74,30 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     setCameraActive(false);
   };
 
+  const preprocessImage = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return canvas;
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Convert to grayscale and enhance contrast
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+      
+      // Enhance contrast
+      const enhanced = gray < 128 ? Math.max(0, gray - 30) : Math.min(255, gray + 30);
+      
+      data[i] = enhanced;     // Red
+      data[i + 1] = enhanced; // Green
+      data[i + 2] = enhanced; // Blue
+      // Alpha channel remains unchanged
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    return canvas;
+  };
+
   const captureFrame = (): HTMLCanvasElement | null => {
     const video = videoRef.current;
     if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
@@ -75,7 +111,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      return canvas;
+      return preprocessImage(canvas);
     }
     
     return null;
@@ -87,6 +123,8 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     setIsScanning(true);
     setError("");
     setDetectedText("");
+    setDetectedCard(null);
+    setScanProgress("Capturing image...");
 
     try {
       const canvas = captureFrame();
@@ -96,16 +134,24 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
 
       toast({
         title: "Scanning card...",
-        description: "Processing image with OCR",
+        description: "Processing image with advanced OCR",
       });
 
+      setScanProgress("Processing with OCR...");
+
+      // Enhanced Tesseract configuration for better card text recognition
       const { data: { text } } = await Tesseract.recognize(canvas, 'eng', {
-        logger: m => console.log(m)
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setScanProgress(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+          }
+        }
       });
 
       console.log("Detected text:", text);
       setDetectedText(text);
 
+      setScanProgress("Analyzing card name...");
       // Process the detected text to extract card information
       await processDetectedText(text);
 
@@ -119,38 +165,118 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
       });
     } finally {
       setIsScanning(false);
+      setScanProgress("");
+    }
+  };
+
+  const extractCardNames = (text: string): string[] => {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    const potentialNames: string[] = [];
+
+    for (const line of lines) {
+      const cleanLine = line.trim();
+      
+      // Skip lines that are clearly not card names
+      if (cleanLine.length < 3) continue;
+      if (/^\d+$/.test(cleanLine)) continue; // Pure numbers
+      if (/^[^\w\s]+$/.test(cleanLine)) continue; // Only symbols
+      if (/^\d+\/\d+$/.test(cleanLine)) continue; // Power/toughness
+      if (/^[\d\s\+\-\/]+$/.test(cleanLine)) continue; // Mana costs or stats
+      
+      // Clean up common OCR artifacts
+      let cleaned = cleanLine
+        .replace(/[|]/g, 'I') // Common OCR mistake
+        .replace(/[0]/g, 'O') // Zero to O
+        .replace(/[1]/g, 'I') // One to I in names
+        .replace(/^\W+|\W+$/g, '') // Remove leading/trailing symbols
+        .replace(/\s+/g, ' '); // Normalize spaces
+
+      // Skip if too short after cleaning
+      if (cleaned.length < 3) continue;
+      
+      // Prefer lines that look like proper names (title case)
+      const titleCaseScore = /^[A-Z][a-z]/.test(cleaned) ? 2 : 1;
+      const lengthScore = Math.min(cleaned.length / 10, 2);
+      const score = titleCaseScore + lengthScore;
+      
+      potentialNames.push(cleaned);
+    }
+
+    // Sort by likely card name characteristics
+    return potentialNames.sort((a, b) => {
+      const aScore = (a.match(/^[A-Z]/) ? 2 : 0) + Math.min(a.length / 10, 2);
+      const bScore = (b.match(/^[A-Z]/) ? 2 : 0) + Math.min(b.length / 10, 2);
+      return bScore - aScore;
+    });
+  };
+
+  const searchScryfallCard = async (cardName: string): Promise<any> => {
+    try {
+      setScanProgress(`Searching for "${cardName}"...`);
+      
+      // Use fuzzy search with Scryfall API
+      const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
+      
+      if (response.ok) {
+        const cardData = await response.json();
+        return cardData;
+      } else if (response.status === 404) {
+        // Try exact search as fallback
+        const exactResponse = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`);
+        if (exactResponse.ok) {
+          return await exactResponse.json();
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Scryfall API error:", error);
+      return null;
     }
   };
 
   const processDetectedText = async (text: string) => {
-    const normalizedName = text.trim().toLowerCase();
+    const potentialNames = extractCardNames(text);
     
-    // Basic card name extraction - look for lines that might be card names
-    const lines = text.split('\n').filter(line => line.trim().length > 0);
-    
-    // Try to find the card name (usually the first significant line)
-    let cardName = "";
-    for (const line of lines) {
-      const cleanLine = line.trim();
-      // Skip very short lines or lines with mostly numbers/symbols
-      if (cleanLine.length > 3 && !/^\d+$/.test(cleanLine) && !/^[^\w\s]+$/.test(cleanLine)) {
-        cardName = cleanLine;
-        break;
-      }
-    }
-
-    if (cardName) {
-      await handleAddCard({ name: cardName, detectedText: text });
-    } else {
+    if (potentialNames.length === 0) {
       toast({
         title: "Card not recognized",
         description: "Unable to identify card name from the scan.",
         variant: "destructive",
       });
+      return;
     }
+
+    // Try each potential name with Scryfall API
+    for (const cardName of potentialNames.slice(0, 3)) { // Try top 3 candidates
+      const scryfallData = await searchScryfallCard(cardName);
+      
+      if (scryfallData) {
+        const detectedCard: DetectedCard = {
+          name: scryfallData.name,
+          confidence: 0.8, // Base confidence for successful Scryfall match
+          scryfallData
+        };
+        
+        setDetectedCard(detectedCard);
+        await handleAddCard({ 
+          name: scryfallData.name, 
+          detectedText: text,
+          scryfallData 
+        });
+        return;
+      }
+    }
+
+    // If no Scryfall matches, show the best guess
+    toast({
+      title: "Card not found",
+      description: `Detected "${potentialNames[0]}" but couldn't find it in the database.`,
+      variant: "destructive",
+    });
   };
 
-  const handleAddCard = async (cardData: { name: string; detectedText: string }) => {
+  const handleAddCard = async (cardData: { name: string; detectedText: string; scryfallData?: any }) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -204,8 +330,8 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Camera View */}
-          <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+          {/* Camera View - Portrait orientation for Magic cards */}
+          <div className="relative bg-black rounded-lg overflow-hidden aspect-[3/4] max-w-md mx-auto">
             {error ? (
               <div className="flex items-center justify-center h-full text-red-400 p-4 text-center">
                 <div>
@@ -233,7 +359,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div className="text-center text-white">
                       <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                      <p>Scanning card...</p>
+                      <p className="text-sm">{scanProgress || "Scanning card..."}</p>
                     </div>
                   </div>
                 )}
@@ -278,8 +404,41 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
             </Button>
           </div>
 
+          {/* Detected Card Display */}
+          {detectedCard && (
+            <div className="bg-glass rounded-lg p-4 border border-glass">
+              <div className="flex items-center gap-3 mb-3">
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <h4 className="text-sm font-semibold text-slate-300">Card Found!</h4>
+              </div>
+              <div className="flex gap-3">
+                {detectedCard.scryfallData?.image_uris?.small && (
+                  <img 
+                    src={detectedCard.scryfallData.image_uris.small} 
+                    alt={detectedCard.name}
+                    className="w-16 h-22 rounded object-cover"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="font-medium text-white">{detectedCard.name}</p>
+                  {detectedCard.scryfallData?.set_name && (
+                    <p className="text-xs text-slate-400">{detectedCard.scryfallData.set_name}</p>
+                  )}
+                  {detectedCard.scryfallData?.mana_cost && (
+                    <p className="text-xs text-slate-400">Mana Cost: {detectedCard.scryfallData.mana_cost}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs">
+                      {Math.round(detectedCard.confidence * 100)}% confidence
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Detected Text Display */}
-          {detectedText && (
+          {detectedText && !detectedCard && (
             <div className="bg-glass rounded-lg p-4 border border-glass">
               <h4 className="text-sm font-semibold text-slate-300 mb-2">Detected Text:</h4>
               <pre className="text-xs text-slate-400 whitespace-pre-wrap max-h-32 overflow-y-auto">
