@@ -175,43 +175,75 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
   };
 
   const extractCardNames = (text: string): string[] => {
+    console.log("Raw OCR text:", text);
+    
     const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
     const potentialNames: string[] = [];
+    const allWords: string[] = [];
+
+    // Extract all words for potential partial matching
+    const words = text.split(/\s+/).map(word => word.trim()).filter(word => word.length > 0);
+    allWords.push(...words);
 
     for (const line of lines) {
       const cleanLine = line.trim();
       
-      // Skip lines that are clearly not card names
-      if (cleanLine.length < 3) continue;
-      if (/^\d+$/.test(cleanLine)) continue; // Pure numbers
-      if (/^[^\w\s]+$/.test(cleanLine)) continue; // Only symbols
-      if (/^\d+\/\d+$/.test(cleanLine)) continue; // Power/toughness
-      if (/^[\d\s\+\-\/]+$/.test(cleanLine)) continue; // Mana costs or stats
+      // More lenient filtering - only skip obvious non-names
+      if (cleanLine.length < 2) continue;
+      if (/^\d+$/.test(cleanLine)) continue; // Pure numbers only
+      if (/^\d+\/\d+$/.test(cleanLine)) continue; // Power/toughness only
+      if (/^[\{\}\d\s\+\-\/WUBRG]+$/.test(cleanLine)) continue; // Mana costs only
       
-      // Clean up common OCR artifacts
+      // Clean up common OCR artifacts with more options
       let cleaned = cleanLine
         .replace(/[|]/g, 'I') // Common OCR mistake
-        .replace(/[0]/g, 'O') // Zero to O
         .replace(/[1]/g, 'I') // One to I in names
+        .replace(/[0]/g, 'O') // Zero to O
+        .replace(/[8]/g, 'B') // Eight to B
+        .replace(/[5]/g, 'S') // Five to S
+        .replace(/[6]/g, 'G') // Six to G
         .replace(/^\W+|\W+$/g, '') // Remove leading/trailing symbols
-        .replace(/\s+/g, ' '); // Normalize spaces
+        .replace(/\s+/g, ' ') // Normalize spaces
+        .replace(/[^\w\s'-]/g, ' ') // Keep only letters, numbers, spaces, hyphens, apostrophes
+        .trim();
 
-      // Skip if too short after cleaning
-      if (cleaned.length < 3) continue;
-      
-      // Prefer lines that look like proper names (title case)
-      const titleCaseScore = /^[A-Z][a-z]/.test(cleaned) ? 2 : 1;
-      const lengthScore = Math.min(cleaned.length / 10, 2);
-      const score = titleCaseScore + lengthScore;
+      // More lenient length check
+      if (cleaned.length < 2) continue;
       
       potentialNames.push(cleaned);
+      
+      // Also try individual words from longer lines
+      if (cleaned.includes(' ')) {
+        const wordsInLine = cleaned.split(' ').filter(word => word.length >= 3);
+        potentialNames.push(...wordsInLine);
+      }
     }
 
-    // Sort by likely card name characteristics
-    return potentialNames.sort((a, b) => {
-      const aScore = (a.match(/^[A-Z]/) ? 2 : 0) + Math.min(a.length / 10, 2);
-      const bScore = (b.match(/^[A-Z]/) ? 2 : 0) + Math.min(b.length / 10, 2);
-      return bScore - aScore;
+    // Add combinations of consecutive words
+    for (let i = 0; i < allWords.length - 1; i++) {
+      const word1 = allWords[i].replace(/[^\w]/g, '');
+      const word2 = allWords[i + 1].replace(/[^\w]/g, '');
+      if (word1.length >= 2 && word2.length >= 2) {
+        potentialNames.push(`${word1} ${word2}`);
+      }
+    }
+
+    // Remove duplicates and sort by likelihood
+    const uniqueNames = Array.from(new Set(potentialNames));
+    
+    console.log("Extracted potential names:", uniqueNames);
+    
+    return uniqueNames.sort((a, b) => {
+      // Prefer longer names
+      const lengthScore = b.length - a.length;
+      // Prefer names with title case
+      const titleCaseA = /^[A-Z][a-z]/.test(a) ? 10 : 0;
+      const titleCaseB = /^[A-Z][a-z]/.test(b) ? 10 : 0;
+      // Prefer names with multiple words
+      const wordCountA = a.split(' ').length > 1 ? 5 : 0;
+      const wordCountB = b.split(' ').length > 1 ? 5 : 0;
+      
+      return (titleCaseB + wordCountB + lengthScore) - (titleCaseA + wordCountA);
     });
   };
 
@@ -242,6 +274,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
 
   const processDetectedText = async (text: string) => {
     const potentialNames = extractCardNames(text);
+    console.log("Processing potential names:", potentialNames);
     
     if (potentialNames.length === 0) {
       toast({
@@ -252,41 +285,84 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
       return;
     }
 
-    // Search for multiple potential matches using direct Scryfall API
-    const searchPromises = potentialNames.slice(0, 3).map(async (cardName) => {
+    let allResults: any[] = [];
+
+    // Strategy 1: Fuzzy search with Scryfall named endpoint (most accurate)
+    for (const cardName of potentialNames.slice(0, 5)) {
       try {
-        setScanProgress(`Searching for "${cardName}"...`);
-        const response = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(cardName)}"&unique=cards&order=name`);
+        setScanProgress(`Fuzzy searching for "${cardName}"...`);
+        const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
         
         if (response.ok) {
-          const data = await response.json();
-          return data.data?.slice(0, 5) || []; // Limit to top 5 results per search
+          const cardData = await response.json();
+          allResults.push(cardData);
+          console.log(`Fuzzy search found: ${cardData.name}`);
         }
-        return [];
       } catch (error) {
-        console.error(`Search failed for "${cardName}":`, error);
-        return [];
+        console.error(`Fuzzy search failed for "${cardName}":`, error);
       }
-    });
+    }
 
-    const allResults = await Promise.all(searchPromises);
-    const flatResults = allResults.flat();
-    
+    // Strategy 2: General search with partial matching (if fuzzy didn't find enough)
+    if (allResults.length < 3) {
+      for (const cardName of potentialNames.slice(0, 5)) {
+        try {
+          setScanProgress(`Searching for "${cardName}"...`);
+          // Use general search without exact match quotes for more flexibility
+          const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)}&unique=cards&order=name`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            const results = data.data?.slice(0, 3) || [];
+            allResults.push(...results);
+            console.log(`General search found ${results.length} results for "${cardName}"`);
+          }
+        } catch (error) {
+          console.error(`General search failed for "${cardName}":`, error);
+        }
+      }
+    }
+
+    // Strategy 3: Partial word matching (if still not enough results)
+    if (allResults.length < 3) {
+      for (const cardName of potentialNames.slice(0, 3)) {
+        const words = cardName.split(' ').filter(word => word.length >= 3);
+        for (const word of words) {
+          try {
+            setScanProgress(`Searching for partial match "${word}"...`);
+            const response = await fetch(`https://api.scryfall.com/cards/search?q=name:${encodeURIComponent(word)}&unique=cards&order=name`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const results = data.data?.slice(0, 2) || [];
+              allResults.push(...results);
+              console.log(`Partial search found ${results.length} results for "${word}"`);
+            }
+          } catch (error) {
+            console.error(`Partial search failed for "${word}":`, error);
+          }
+        }
+      }
+    }
+
     // Remove duplicates based on card ID
-    const uniqueResults = flatResults.filter((card: any, index: number, self: any[]) => 
+    const uniqueResults = allResults.filter((card: any, index: number, self: any[]) => 
       index === self.findIndex((c: any) => c.id === card.id)
     );
 
+    console.log(`Total unique results found: ${uniqueResults.length}`);
+
     if (uniqueResults.length > 0) {
-      setSearchResults(uniqueResults);
+      setSearchResults(uniqueResults.slice(0, 15)); // Limit to 15 results
       toast({
         title: "Cards found!",
         description: `Found ${uniqueResults.length} potential matches. Tap a card to view details.`,
       });
     } else {
+      // Show detected text for debugging
       toast({
         title: "Card not found",
-        description: `Detected "${potentialNames[0]}" but couldn't find it in the database.`,
+        description: `No matches found. Check the detected text below for debugging.`,
         variant: "destructive",
       });
     }
@@ -513,13 +589,33 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
             </div>
           )}
 
-          {/* Detected Text Display */}
-          {detectedText && !detectedCard && searchResults.length === 0 && (
+          {/* Detected Text Display - Always show when text is detected */}
+          {detectedText && (
             <div className="bg-glass rounded-lg p-4 border border-glass">
-              <h4 className="text-sm font-semibold text-slate-300 mb-2">Detected Text:</h4>
-              <pre className="text-xs text-slate-400 whitespace-pre-wrap max-h-32 overflow-y-auto">
-                {detectedText}
-              </pre>
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle className="h-4 w-4 text-blue-400" />
+                <h4 className="text-sm font-semibold text-slate-300">Debug Information:</h4>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Raw OCR Text:</p>
+                  <pre className="text-xs text-slate-300 whitespace-pre-wrap max-h-24 overflow-y-auto bg-slate-800/50 p-2 rounded">
+                    {detectedText}
+                  </pre>
+                </div>
+                {extractCardNames(detectedText).length > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Extracted Potential Names:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {extractCardNames(detectedText).slice(0, 10).map((name, index) => (
+                        <span key={index} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
