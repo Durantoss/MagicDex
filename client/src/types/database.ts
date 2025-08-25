@@ -177,6 +177,75 @@ export interface Database {
         }
         Relationships: []
       }
+      decks: {
+        Row: {
+          id: number
+          userId: string
+          name: string
+          description: string | null
+          format: string
+          colors: string[]
+          isPublic: boolean
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id?: number
+          userId: string
+          name: string
+          description?: string | null
+          format?: string
+          colors?: string[]
+          isPublic?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: number
+          userId?: string
+          name?: string
+          description?: string | null
+          format?: string
+          colors?: string[]
+          isPublic?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Relationships: []
+      }
+      deckCards: {
+        Row: {
+          id: number
+          deckId: number
+          cardId: string
+          quantity: number
+          cardData: Json
+          isCommander: boolean
+          isSideboard: boolean
+          createdAt: string
+        }
+        Insert: {
+          id?: number
+          deckId: number
+          cardId: string
+          quantity?: number
+          cardData: Json
+          isCommander?: boolean
+          isSideboard?: boolean
+          createdAt?: string
+        }
+        Update: {
+          id?: number
+          deckId?: number
+          cardId?: string
+          quantity?: number
+          cardData?: Json
+          isCommander?: boolean
+          isSideboard?: boolean
+          createdAt?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -7,6 +7,8 @@ import { Plus, Heart, X } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { wishlistApi } from "@/lib/api";
 
 interface CardDetailModalProps {
   card: ScryfallCard;
@@ -15,11 +17,19 @@ interface CardDetailModalProps {
 
 export default function CardDetailModal({ card, onClose }: CardDetailModalProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // Get user collection
   const { data: collection = [] } = useQuery({
     queryKey: ["/api/collection"],
+  });
+
+  // Get user wishlist
+  const { data: wishlist = [] } = useQuery({
+    queryKey: ["/api/wishlist", user?.id],
+    queryFn: () => user ? wishlistApi.getWishlist(user.id) : [],
+    enabled: !!user,
   });
 
   // Add to collection mutation
@@ -48,7 +58,35 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     },
   });
 
+  // Add to wishlist mutation
+  const addToWishlistMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("User not authenticated");
+      return await wishlistApi.addToWishlist({
+        userId: user.id,
+        cardId: card.id,
+        quantity: 1,
+        cardData: card as any,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/wishlist"] });
+      toast({
+        title: "Added to Wishlist",
+        description: "Card has been added to your wishlist.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add card to wishlist.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const isInCollection = Array.isArray(collection) && collection.some((item: any) => item.cardId === card.id);
+  const isInWishlist = Array.isArray(wishlist) && wishlist.some((item: any) => item.cardId === card.id);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -244,12 +282,14 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
                 {isInCollection ? "In Collection" : "Add to Collection"}
               </Button>
               <Button
+                onClick={() => addToWishlistMutation.mutate()}
+                disabled={addToWishlistMutation.isPending || isInWishlist || !user}
                 variant="outline"
                 className="flex-1 bg-mtg-primary hover:bg-mtg-primary/90 text-white py-3 px-4 rounded-lg transition-colors duration-200"
                 data-testid="button-add-to-wishlist"
               >
                 <Heart className="mr-2 h-4 w-4" />
-                Add to Wishlist
+                {isInWishlist ? "In Wishlist" : "Add to Wishlist"}
               </Button>
             </div>
           </div>

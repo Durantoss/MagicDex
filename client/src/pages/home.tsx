@@ -5,10 +5,11 @@ import CardGrid from "@/components/card-grid";
 import CardDetailModal from "@/components/card-detail-modal";
 import CollectionModal from "@/components/collection-modal";
 import DeckBuilderModal from "@/components/deck-builder-modal";
+import WishlistModal from "@/components/wishlist-modal";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { SearchFilters, ScryfallCard } from "@/types/scryfall";
 import { Button } from "@/components/ui/button";
-import { Bookmark, User, Wand2, Book, BookOpen, LogIn, LogOut } from "lucide-react";
+import { Bookmark, User, Wand2, Book, BookOpen, LogIn, LogOut, Heart } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { scryfallApi } from "@/lib/api";
@@ -24,6 +25,7 @@ export default function Home() {
   const [showCardModal, setShowCardModal] = useState(false);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const [showDeckBuilderModal, setShowDeckBuilderModal] = useState(false);
+  const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const { data: searchResults, isLoading, error } = useQuery({
@@ -128,6 +130,15 @@ export default function Home() {
                     <Bookmark className="mr-1 lg:mr-2 h-4 w-4" />
                     Collection
                     <div className="absolute inset-0 bg-mtg-accent rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                  </Button>
+                  <Button 
+                    onClick={() => setShowWishlistModal(true)}
+                    className="relative bg-pink-600 hover:shadow-glow text-white font-semibold px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm lg:text-base touch-manipulation"
+                    data-testid="button-wishlist"
+                  >
+                    <Heart className="mr-1 lg:mr-2 h-4 w-4" />
+                    Wishlist
+                    <div className="absolute inset-0 bg-pink-600 rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                   </Button>
                   <Link href="/profile">
                     <Button 
@@ -260,6 +271,15 @@ export default function Home() {
                   >
                     <Bookmark className="mr-1.5 h-4 w-4" />
                     Collection
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={() => setShowWishlistModal(true)}
+                    className="relative bg-pink-600 hover:shadow-glow text-white font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 shadow-card text-sm touch-manipulation"
+                    data-testid="button-wishlist-mobile"
+                  >
+                    <Heart className="mr-1.5 h-4 w-4" />
+                    Wishlist
                   </Button>
                 </>
               )}
@@ -406,6 +426,12 @@ export default function Home() {
       {showCollectionModal && (
         <CollectionModal
           onClose={() => setShowCollectionModal(false)}
+        />
+      )}
+
+      {showWishlistModal && (
+        <WishlistModal
+          onClose={() => setShowWishlistModal(false)}
         />
       )}
 

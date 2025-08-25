@@ -7,6 +7,10 @@ type Wishlist = Database['public']['Tables']['wishlists']['Row']
 type WishlistInsert = Database['public']['Tables']['wishlists']['Insert']
 type TradingProfile = Database['public']['Tables']['tradingProfiles']['Row']
 type TradingProfileInsert = Database['public']['Tables']['tradingProfiles']['Insert']
+type Deck = Database['public']['Tables']['decks']['Row']
+type DeckInsert = Database['public']['Tables']['decks']['Insert']
+type DeckCard = Database['public']['Tables']['deckCards']['Row']
+type DeckCardInsert = Database['public']['Tables']['deckCards']['Insert']
 
 // Collection API
 export const collectionApi = {
@@ -188,6 +192,131 @@ export const tradingApi = {
       .from('tradingProfiles')
       .update(updates)
       .eq('userId', userId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+}
+
+// Deck API
+export const deckApi = {
+  async getDecks(userId: string): Promise<Deck[]> {
+    const { data, error } = await supabase
+      .from('decks')
+      .select('*')
+      .eq('userId', userId)
+      .order('updatedAt', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  async getDeck(deckId: number): Promise<Deck | null> {
+    const { data, error } = await supabase
+      .from('decks')
+      .select('*')
+      .eq('id', deckId)
+      .single()
+
+    if (error && error.code !== 'PGRST116') throw error
+    return data
+  },
+
+  async createDeck(deck: DeckInsert): Promise<Deck> {
+    const { data, error } = await supabase
+      .from('decks')
+      .insert(deck)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async updateDeck(deckId: number, updates: Partial<DeckInsert>): Promise<Deck> {
+    const { data, error } = await supabase
+      .from('decks')
+      .update(updates)
+      .eq('id', deckId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async deleteDeck(deckId: number): Promise<boolean> {
+    const { error } = await supabase
+      .from('decks')
+      .delete()
+      .eq('id', deckId)
+
+    if (error) throw error
+    return true
+  },
+
+  async getDeckCards(deckId: number): Promise<DeckCard[]> {
+    const { data, error } = await supabase
+      .from('deckCards')
+      .select('*')
+      .eq('deckId', deckId)
+      .order('createdAt')
+
+    if (error) throw error
+    return data || []
+  },
+
+  async addCardToDeck(deckCard: DeckCardInsert): Promise<DeckCard> {
+    // Check if card already exists in deck
+    const { data: existing } = await supabase
+      .from('deckCards')
+      .select('*')
+      .eq('deckId', deckCard.deckId)
+      .eq('cardId', deckCard.cardId)
+      .eq('isSideboard', deckCard.isSideboard || false)
+      .single()
+
+    if (existing) {
+      // Update quantity
+      const { data, error } = await supabase
+        .from('deckCards')
+        .update({ quantity: existing.quantity + (deckCard.quantity || 1) })
+        .eq('id', existing.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    } else {
+      // Insert new card
+      const { data, error } = await supabase
+        .from('deckCards')
+        .insert(deckCard)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    }
+  },
+
+  async removeCardFromDeck(deckCardId: number): Promise<boolean> {
+    const { error } = await supabase
+      .from('deckCards')
+      .delete()
+      .eq('id', deckCardId)
+
+    if (error) throw error
+    return true
+  },
+
+  async updateDeckCardQuantity(deckCardId: number, quantity: number): Promise<DeckCard> {
+    const { data, error } = await supabase
+      .from('deckCards')
+      .update({ quantity })
+      .eq('id', deckCardId)
       .select()
       .single()
 
