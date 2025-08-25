@@ -145,7 +145,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
         description: "Processing image with advanced OCR",
       });
 
-      setScanProgress("Processing with OCR...");
+      setScanProgress("Deciphering ancient texts...");
 
       // Enhanced Tesseract configuration for better card text recognition
       const { data: { text } } = await Tesseract.recognize(canvas, 'eng', {
@@ -159,7 +159,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
       console.log("Detected text:", text);
       setDetectedText(text);
 
-      setScanProgress("Analyzing card name...");
+      setScanProgress("Combing the Archives...");
       // Process the detected text to extract card information
       await processDetectedText(text);
 
@@ -291,9 +291,9 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     let allResults: any[] = [];
 
     // Strategy 1: Fuzzy search with Scryfall named endpoint (most accurate)
-    for (const cardName of potentialNames.slice(0, 5)) {
+    for (const cardName of potentialNames.slice(0, 10)) {
       try {
-        setScanProgress(`Fuzzy searching for "${cardName}"...`);
+        setScanProgress("Combing the Archives...");
         const response = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(cardName)}`);
         
         if (response.ok) {
@@ -308,9 +308,9 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
 
     // Strategy 2: General search with partial matching (if fuzzy didn't find enough)
     if (allResults.length < 3) {
-      for (const cardName of potentialNames.slice(0, 5)) {
+      for (const cardName of potentialNames.slice(0, 10)) {
         try {
-          setScanProgress(`Searching for "${cardName}"...`);
+          setScanProgress("Combing the Archives...");
           // Use general search without exact match quotes for more flexibility
           const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(cardName)}&unique=cards&order=name`);
           
@@ -328,11 +328,11 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
 
     // Strategy 3: Partial word matching (if still not enough results)
     if (allResults.length < 3) {
-      for (const cardName of potentialNames.slice(0, 3)) {
-        const words = cardName.split(' ').filter(word => word.length >= 3);
+      for (const cardName of potentialNames.slice(0, 5)) {
+        const words = cardName.split(' ').filter(word => word.length >= 2);
         for (const word of words) {
           try {
-            setScanProgress(`Searching for partial match "${word}"...`);
+            setScanProgress("Combing the Archives...");
             const response = await fetch(`https://api.scryfall.com/cards/search?q=name:${encodeURIComponent(word)}&unique=cards&order=name`);
             
             if (response.ok) {
@@ -433,7 +433,7 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
 
     try {
       toast({
-        title: "Searching...",
+        title: "Combing the Archives...",
         description: `Looking for "${manualSearchText}"`,
       });
 
