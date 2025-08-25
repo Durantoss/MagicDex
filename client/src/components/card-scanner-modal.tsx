@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, X, Scan, Loader2, CheckCircle, AlertCircle, Plus, Eye } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Camera, X, Scan, Loader2, CheckCircle, AlertCircle, Plus, Eye, Search, Edit3 } from "lucide-react";
 import Tesseract from 'tesseract.js';
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -34,6 +35,8 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
   const [showCardDetail, setShowCardDetail] = useState(false);
   const [error, setError] = useState<string>("");
   const [scanProgress, setScanProgress] = useState<string>("");
+  const [manualSearchText, setManualSearchText] = useState<string>("");
+  const [isManualSearching, setIsManualSearching] = useState(false);
 
   // Initialize camera when modal opens
   useEffect(() => {
@@ -414,12 +417,48 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
     setSelectedCard(null);
   };
 
+  const handleManualSearch = async () => {
+    if (!manualSearchText.trim()) {
+      toast({
+        title: "Enter card name",
+        description: "Please enter a card name to search for.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsManualSearching(true);
+    setError("");
+    setSearchResults([]);
+
+    try {
+      toast({
+        title: "Searching...",
+        description: `Looking for "${manualSearchText}"`,
+      });
+
+      await processDetectedText(manualSearchText);
+    } catch (err) {
+      console.error("Manual search error:", err);
+      setError("Failed to search for card. Please try again.");
+      toast({
+        title: "Search failed",
+        description: "Unable to find the card. Please check the spelling.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsManualSearching(false);
+    }
+  };
+
   const handleClose = () => {
     stopCamera();
     onOpenChange(false);
     setDetectedText("");
     setSearchResults([]);
     setError("");
+    setManualSearchText("");
+    setIsManualSearching(false);
   };
 
   return (
@@ -505,6 +544,49 @@ export function CardScannerModal({ open, onOpenChange }: CardScannerModalProps) 
               <X className="mr-2 h-4 w-4" />
               Close
             </Button>
+          </div>
+
+          {/* Manual Search Section */}
+          <div className="bg-glass rounded-lg p-4 border border-glass">
+            <div className="flex items-center gap-2 mb-3">
+              <Edit3 className="h-4 w-4 text-blue-400" />
+              <h4 className="text-sm font-semibold text-slate-300">Manual Search</h4>
+              <span className="text-xs text-slate-500">(Use if OCR fails)</span>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Enter card name manually..."
+                value={manualSearchText}
+                onChange={(e) => setManualSearchText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isManualSearching) {
+                    handleManualSearch();
+                  }
+                }}
+                className="flex-1 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400"
+                disabled={isManualSearching}
+              />
+              <Button
+                onClick={handleManualSearch}
+                disabled={isManualSearching || !manualSearchText.trim()}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isManualSearching ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Searching...
+                  </>
+                ) : (
+                  <>
+                    <Search className="mr-2 h-4 w-4" />
+                    Search
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              If the OCR produces garbled text, manually type the card name here for accurate results.
+            </p>
           </div>
 
           {/* Detected Card Display */}
