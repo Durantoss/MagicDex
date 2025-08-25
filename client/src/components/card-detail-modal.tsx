@@ -1,7 +1,7 @@
 import { ScryfallCard } from "@/types/scryfall";
 import { getCardImageUrl, formatManaCost, getRarityColor, getManaTypeColors, getColorSymbols, getPriceRange, getCardVariations, groupVariationsBySet } from "@/lib/scryfall-api";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -184,6 +184,9 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
                   <X className="h-5 w-5" />
                 </Button>
               </div>
+              <DialogDescription className="sr-only">
+                Detailed information for {card.name} including stats, pricing, and collection options
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6">
