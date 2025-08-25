@@ -18,63 +18,57 @@ export const collectionApi = {
     const { data, error } = await supabase
       .from('collections')
       .select('*')
-      .eq('userId', userId)
-      .order('id')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
 
     if (error) throw error
     return data || []
   },
 
-  async addToCollection(item: CollectionInsert): Promise<Collection> {
-    // Check if card already exists
-    const { data: existing } = await supabase
-      .from('collections')
-      .select('*')
-      .eq('userId', item.userId)
-      .eq('cardId', item.cardId)
-      .single()
+  async addToCollection(
+    userId: string, 
+    cardId: string, 
+    normalQuantity: number = 0, 
+    foilQuantity: number = 0, 
+    cardData: any = {}
+  ): Promise<Collection> {
+    const { data, error } = await supabase.rpc('upsert_collection_entry', {
+      p_user_id: userId,
+      p_card_id: cardId,
+      p_normal_quantity: normalQuantity,
+      p_foil_quantity: foilQuantity,
+      p_card_data: cardData
+    })
 
-    if (existing) {
-      // Update quantity
-      const { data, error } = await supabase
-        .from('collections')
-        .update({ quantity: existing.quantity + (item.quantity || 1) })
-        .eq('id', existing.id)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
-    } else {
-      // Insert new item
-      const { data, error } = await supabase
-        .from('collections')
-        .insert(item)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
-    }
+    if (error) throw error
+    return data
   },
 
   async removeFromCollection(userId: string, cardId: string): Promise<boolean> {
     const { error } = await supabase
       .from('collections')
       .delete()
-      .eq('userId', userId)
-      .eq('cardId', cardId)
+      .eq('user_id', userId)
+      .eq('card_id', cardId)
 
     if (error) throw error
     return true
   },
 
-  async updateQuantity(userId: string, cardId: string, quantity: number): Promise<Collection | null> {
+  async updateQuantity(
+    userId: string, 
+    cardId: string, 
+    normalQuantity: number = 0, 
+    foilQuantity: number = 0
+  ): Promise<Collection | null> {
     const { data, error } = await supabase
       .from('collections')
-      .update({ quantity })
-      .eq('userId', userId)
-      .eq('cardId', cardId)
+      .update({ 
+        normal_quantity: normalQuantity,
+        foil_quantity: foilQuantity
+      })
+      .eq('user_id', userId)
+      .eq('card_id', cardId)
       .select()
       .single()
 
@@ -86,7 +80,7 @@ export const collectionApi = {
     const { error } = await supabase
       .from('collections')
       .delete()
-      .eq('userId', userId)
+      .eq('user_id', userId)
 
     if (error) throw error
   }
@@ -98,63 +92,59 @@ export const wishlistApi = {
     const { data, error } = await supabase
       .from('wishlists')
       .select('*')
-      .eq('userId', userId)
-      .order('createdAt', { ascending: false })
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
 
     if (error) throw error
     return data || []
   },
 
-  async addToWishlist(item: WishlistInsert): Promise<Wishlist> {
-    // Check if card already exists
-    const { data: existing } = await supabase
-      .from('wishlists')
-      .select('*')
-      .eq('userId', item.userId)
-      .eq('cardId', item.cardId)
-      .single()
+  async addToWishlist(
+    userId: string, 
+    cardId: string, 
+    normalQuantity: number = 0, 
+    foilQuantity: number = 0, 
+    priority: string = 'medium',
+    cardData: any = {}
+  ): Promise<Wishlist> {
+    const { data, error } = await supabase.rpc('upsert_wishlist_entry', {
+      p_user_id: userId,
+      p_card_id: cardId,
+      p_normal_quantity: normalQuantity,
+      p_foil_quantity: foilQuantity,
+      p_priority: priority,
+      p_card_data: cardData
+    })
 
-    if (existing) {
-      // Update quantity
-      const { data, error } = await supabase
-        .from('wishlists')
-        .update({ quantity: existing.quantity + (item.quantity || 1) })
-        .eq('id', existing.id)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
-    } else {
-      // Insert new item
-      const { data, error } = await supabase
-        .from('wishlists')
-        .insert(item)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
-    }
+    if (error) throw error
+    return data
   },
 
   async removeFromWishlist(userId: string, cardId: string): Promise<boolean> {
     const { error } = await supabase
       .from('wishlists')
       .delete()
-      .eq('userId', userId)
-      .eq('cardId', cardId)
+      .eq('user_id', userId)
+      .eq('card_id', cardId)
 
     if (error) throw error
     return true
   },
 
-  async updateQuantity(userId: string, cardId: string, quantity: number): Promise<Wishlist | null> {
+  async updateQuantity(
+    userId: string, 
+    cardId: string, 
+    normalQuantity: number = 0, 
+    foilQuantity: number = 0
+  ): Promise<Wishlist | null> {
     const { data, error } = await supabase
       .from('wishlists')
-      .update({ quantity })
-      .eq('userId', userId)
-      .eq('cardId', cardId)
+      .update({ 
+        normal_quantity: normalQuantity,
+        foil_quantity: foilQuantity
+      })
+      .eq('user_id', userId)
+      .eq('card_id', cardId)
       .select()
       .single()
 

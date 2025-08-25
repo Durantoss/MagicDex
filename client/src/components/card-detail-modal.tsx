@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { wishlistApi } from "@/lib/api";
+import { wishlistApi, collectionApi } from "@/lib/api";
 import { useState } from "react";
 import { QuantityTracker } from "./quantity-tracker";
 import { FoilBadge, FoilAvailabilityIndicator, PriceComparison } from "./foil-badge";
@@ -33,12 +33,14 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
 
   // Get user collection
   const { data: collection = [] } = useQuery({
-    queryKey: ["/api/collection"],
+    queryKey: ["collection", user?.id],
+    queryFn: () => user ? collectionApi.getCollection(user.id) : [],
+    enabled: !!user,
   });
 
   // Get user wishlist
   const { data: wishlist = [] } = useQuery({
-    queryKey: ["/api/wishlist", user?.id],
+    queryKey: ["wishlist", user?.id],
     queryFn: () => user ? wishlistApi.getWishlist(user.id) : [],
     enabled: !!user,
   });
@@ -72,7 +74,7 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/collection"] });
+      queryClient.invalidateQueries({ queryKey: ["collection", user?.id] });
       const totalQuantity = quantities.normal + quantities.foil;
       const description = quantities.normal > 0 && quantities.foil > 0 
         ? `Added ${quantities.normal} normal + ${quantities.foil} foil copies of ${selectedVariation.name} to your collection.`
@@ -116,7 +118,7 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/wishlist"] });
+      queryClient.invalidateQueries({ queryKey: ["wishlist", user?.id] });
       const totalQuantity = quantities.normal + quantities.foil;
       const description = quantities.normal > 0 && quantities.foil > 0 
         ? `Added ${quantities.normal} normal + ${quantities.foil} foil copies of ${selectedVariation.name} to your wishlist.`
@@ -139,8 +141,8 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     },
   });
 
-  const isInCollection = Array.isArray(collection) && collection.some((item: any) => item.cardId === selectedVariation.id);
-  const isInWishlist = Array.isArray(wishlist) && wishlist.some((item: any) => item.cardId === selectedVariation.id);
+  const isInCollection = Array.isArray(collection) && collection.some((item: any) => item.card_id === selectedVariation.id);
+  const isInWishlist = Array.isArray(wishlist) && wishlist.some((item: any) => item.card_id === selectedVariation.id);
 
   const handleQuantityChange = (finish: 'normal' | 'foil', change: number) => {
     setQuantities(prev => ({
