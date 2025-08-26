@@ -27,11 +27,38 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    target: ['es2015', 'chrome58', 'firefox57', 'safari11'],
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-select'],
+        },
+      },
+    },
+    cssCodeSplit: true,
+    sourcemap: false,
   },
   server: {
     fs: {
       strict: true,
       deny: ["**/.*"],
+    },
+    host: true,
+    port: 5173,
+  },
+  preview: {
+    host: true,
+    port: 4173,
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query'],
+    exclude: ['@replit/vite-plugin-runtime-error-modal'],
+  },
+  esbuild: {
+    target: 'es2015',
+    supported: {
+      'top-level-await': false,
     },
   },
 });
