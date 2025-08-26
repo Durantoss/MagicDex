@@ -59,19 +59,16 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     mutationFn: async () => {
       if (!user) throw new Error("User not authenticated");
       
-      const { data, error } = await supabase.rpc('upsert_collection_entry', {
-        p_user_id: user.id,
-        p_card_id: selectedVariation.id,
-        p_normal_quantity: quantities.normal,
-        p_foil_quantity: quantities.foil,
-        p_card_data: {
+      return await collectionApi.addToCollection(
+        user.id,
+        selectedVariation.id,
+        quantities.normal,
+        quantities.foil,
+        {
           ...selectedVariation,
           image_url: selectedVariation.image_uris?.normal || selectedVariation.image_uris?.large,
         }
-      });
-
-      if (error) throw error;
-      return data;
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collection", user?.id] });
@@ -102,20 +99,17 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
     mutationFn: async () => {
       if (!user) throw new Error("User not authenticated");
       
-      const { data, error } = await supabase.rpc('upsert_wishlist_entry', {
-        p_user_id: user.id,
-        p_card_id: selectedVariation.id,
-        p_normal_quantity: quantities.normal,
-        p_foil_quantity: quantities.foil,
-        p_priority: 'medium',
-        p_card_data: {
+      return await wishlistApi.addToWishlist(
+        user.id,
+        selectedVariation.id,
+        quantities.normal,
+        quantities.foil,
+        'medium',
+        {
           ...selectedVariation,
           image_url: selectedVariation.image_uris?.normal || selectedVariation.image_uris?.large,
         }
-      });
-
-      if (error) throw error;
-      return data;
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wishlist", user?.id] });

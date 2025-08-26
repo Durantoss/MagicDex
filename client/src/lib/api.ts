@@ -32,16 +32,35 @@ export const collectionApi = {
     foilQuantity: number = 0, 
     cardData: any = {}
   ): Promise<Collection> {
-    const { data, error } = await supabase.rpc('upsert_collection_entry', {
-      p_user_id: userId,
-      p_card_id: cardId,
-      p_normal_quantity: normalQuantity,
-      p_foil_quantity: foilQuantity,
-      p_card_data: cardData
-    })
+    try {
+      // First check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
 
-    if (error) throw error
-    return data
+      const { data, error } = await supabase.rpc('upsert_collection_entry', {
+        p_user_id: userId,
+        p_card_id: cardId,
+        p_normal_quantity: normalQuantity,
+        p_foil_quantity: foilQuantity,
+        p_card_data: cardData
+      })
+
+      if (error) {
+        console.error('Supabase RPC error:', error)
+        throw new Error(`Database error: ${error.message}`)
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from database')
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Collection API error:', error)
+      throw error
+    }
   },
 
   async removeFromCollection(userId: string, cardId: string): Promise<boolean> {
@@ -107,17 +126,36 @@ export const wishlistApi = {
     priority: string = 'medium',
     cardData: any = {}
   ): Promise<Wishlist> {
-    const { data, error } = await supabase.rpc('upsert_wishlist_entry', {
-      p_user_id: userId,
-      p_card_id: cardId,
-      p_normal_quantity: normalQuantity,
-      p_foil_quantity: foilQuantity,
-      p_priority: priority,
-      p_card_data: cardData
-    })
+    try {
+      // First check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
 
-    if (error) throw error
-    return data
+      const { data, error } = await supabase.rpc('upsert_wishlist_entry', {
+        p_user_id: userId,
+        p_card_id: cardId,
+        p_normal_quantity: normalQuantity,
+        p_foil_quantity: foilQuantity,
+        p_priority: priority,
+        p_card_data: cardData
+      })
+
+      if (error) {
+        console.error('Supabase RPC error:', error)
+        throw new Error(`Database error: ${error.message}`)
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from database')
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Wishlist API error:', error)
+      throw error
+    }
   },
 
   async removeFromWishlist(userId: string, cardId: string): Promise<boolean> {
