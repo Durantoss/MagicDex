@@ -148,13 +148,13 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-screen bg-mtg-secondary border border-slate-700 text-white overflow-y-auto modal-responsive">
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-0">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-0">
           {/* Card Image */}
-          <div className="lg:w-1/2 p-3 sm:p-6 relative">
+          <div className="md:w-1/2 p-3 sm:p-6 relative">
             <img
               src={getCardImageUrl(selectedVariation, "large")}
               alt={selectedVariation.name}
-              className="w-full max-w-sm mx-auto lg:max-w-none rounded-lg shadow-lg"
+              className="w-full max-w-sm mx-auto md:max-w-none rounded-lg shadow-lg"
               data-testid="img-card-detail"
             />
             {/* Foil badge if card has foil availability */}
@@ -162,10 +162,10 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
           </div>
 
           {/* Card Details */}
-          <div className="lg:w-1/2 p-3 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="md:w-1/2 p-3 sm:p-6 space-y-4 sm:space-y-6">
             <DialogHeader>
               <div className="flex items-start justify-between gap-2">
-                <DialogTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight" data-testid="text-card-name">
+                <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight" data-testid="text-card-name">
                   {card.name}
                 </DialogTitle>
                 <Button
@@ -219,13 +219,13 @@ export default function CardDetailModal({ card, onClose }: CardDetailModalProps)
                 </div>
 
                 {/* Card Type */}
-                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg sm:col-span-2">
+                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg col-span-full">
                   <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Card Type</label>
                   <p className="text-white font-medium text-sm sm:text-base" data-testid="text-type-line">{card.type_line}</p>
                 </div>
 
                 {/* Rarity */}
-                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg sm:col-span-2">
+                <div className="bg-mtg-gray p-3 sm:p-4 rounded-lg col-span-full">
                   <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Rarity</label>
                   <Badge className={`capitalize text-xs sm:text-sm px-2 sm:px-3 py-1 ${getRarityColor(card.rarity)}`} data-testid="text-rarity">
                     {card.rarity}
