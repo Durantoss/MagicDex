@@ -117,6 +117,12 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     document.body.classList.add("app-loaded");
   }, 100);
+   // Haptic feedback for buttons
+  document.querySelectorAll('button, .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(15);
+  });
+});
 });
 
 // Register service worker

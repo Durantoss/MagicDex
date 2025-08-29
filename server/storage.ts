@@ -30,7 +30,7 @@ export interface IStorage {
   // Trade interest methods
   createTradeInterest(trade: InsertTradeInterest): Promise<TradeInterest>;
   getUserTradeInterests(userId: string): Promise<TradeInterest[]>;
-  updateTradeInterestStatus(id: string, status: string): Promise<TradeInterest | undefined>;
+  updateTradeInterestStatus(id: string, status: "pending" | "accepted" | "declined" | "completed"): Promise<TradeInterest | undefined>;
   
   // Trade matching methods
   findTradeMatches(userId: string): Promise<{user: User, matches: {have: Collection[], want: Wishlist[]}}[]>;
@@ -63,7 +63,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     this.users.set(id, user);
     return user;
   }
@@ -79,7 +84,9 @@ export class MemStorage implements IStorage {
     const newCollection: Collection = { 
       ...collection, 
       id,
-      quantity: collection.quantity || 1
+      quantity: collection.quantity || 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.collections.set(id, newCollection);
     return newCollection;
@@ -140,7 +147,8 @@ export class MemStorage implements IStorage {
       id,
       quantity: wishlist.quantity || 1,
       priority: wishlist.priority || "medium",
-      createdAt: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.wishlists.set(id, newWishlist);
     return newWishlist;
@@ -194,6 +202,7 @@ export class MemStorage implements IStorage {
       bio: profile.bio || null,
       reputation: 0,
       completedTrades: 0,
+      tradingPreferences: profile.tradingPreferences || {},
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -239,7 +248,7 @@ export class MemStorage implements IStorage {
     );
   }
 
-  async updateTradeInterestStatus(id: string, status: string): Promise<TradeInterest | undefined> {
+  async updateTradeInterestStatus(id: string, status: "pending" | "accepted" | "declined" | "completed"): Promise<TradeInterest | undefined> {
     const existing = this.tradeInterests.get(id);
     if (existing) {
       const updated = { ...existing, status, updatedAt: new Date() };

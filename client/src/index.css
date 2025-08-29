@@ -477,8 +477,9 @@ body {
 /* Responsive Typography */
 .text-responsive-xl { font-size: clamp(1.5rem, 4vw, 2.5rem); }
 .text-responsive-lg { font-size: clamp(1.25rem, 3vw, 1.875rem); }
-.text-responsive-base { font-size: clamp(1rem, 2.5vw, 1.2rem); 
-  /* ===========================
+.text-responsive-base { font-size: clamp(1rem, 2.5vw, 1.2rem); }
+
+/* ===========================
    Mobile Interactivity & Feedback
    =========================== */
 
@@ -545,4 +546,184 @@ button:active,
   from { opacity: 0; transform: translate(-50%, 10px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* ===========================
+   Global Premium Button Styling
+   =========================== */
+
+/* Base button styles */
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    var(--primary, #4f46e5),
+    var(--primary-dark, #3730a3)
+  );
+  color: var(--primary-foreground, #fff);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.3s ease;
+  -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
+}
+
+/* Hover (desktop) */
+button:hover,
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Pressed/tap state */
+button:active,
+.btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Focus accessibility */
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--ring, #a78bfa);
+  outline-offset: 2px;
+}
+
+/* Optional glowing pulse for primary actions */
+.btn-primary {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15),
+                0 0 0 rgba(79, 70, 229, 0);
+  }
+  50% {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15),
+                0 0 12px rgba(79, 70, 229, 0.6);
+  }
+}
+/* ...your existing styles... */
+
+/* ===========================
+   Mobile Interactivity & Feedback
+   =========================== */
+/* ...phase 1+2 styles here... */
+
+/* ===========================
+   Toast Notification Styles
+   =========================== */
+
+.toast {
+  background: var(--card, #1a1a2e);
+  color: var(--foreground, white);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: fadeInUp 0.3s ease;
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  max-width: 90%;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+/* Success variant */
+.toast-success {
+  background: var(--primary, #4f46e5);
+  color: var(--primary-foreground, #fff);
+}
+
+/* Error variant */
+.toast-error {
+  background: var(--destructive, #ef4444);
+  color: var(--destructive-foreground, #fff);
+}
+
+/* Animation for entry */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+/* ===========================
+   Global Premium Button Styling
+   =========================== */
+
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    var(--primary, #4f46e5),
+    var(--primary-dark, #3730a3)
+  );
+  color: var(--primary-foreground, #fff);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.3s ease;
+  -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
+}
+
+/* Hover (desktop) */
+button:hover,
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Pressed/tap state */
+button:active,
+.btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Focus accessibility */
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--ring, #a78bfa);
+  outline-offset: 2px;
+}
+
+/* Optional glowing pulse for primary actions */
+.btn-primary {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15),
+                0 0 0 rgba(79, 70, 229, 0);
+  }
+  50% {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15),
+                0 0 12px rgba(79, 70, 229, 0.6);
+  }
 }
