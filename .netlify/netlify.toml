@@ -1,7 +1,7 @@
+functionsDirectory = "C:\\Users\\emwil\\magicdex\\netlify\\functions"
+functionsDirectoryOrigin = "config"
 redirectsOrigin = "config"
 plugins = []
-functionsDirectory = "C:\\Users\\emwil\\Magic_Ann\\MagicDex\\netlify\\functions"
-functionsDirectoryOrigin = "config"
 headers = []
 
 [functions]
@@ -9,11 +9,11 @@ headers = []
 [functions."*"]
 
 [build]
-publish = "C:\\Users\\emwil\\Magic_Ann\\MagicDex\\dist\\public"
+publish = "C:\\Users\\emwil\\magicdex\\dist\\public"
 publishOrigin = "config"
 commandOrigin = "config"
 command = "npm run build"
-functions = "C:\\Users\\emwil\\Magic_Ann\\MagicDex\\netlify\\functions"
+functions = "C:\\Users\\emwil\\magicdex\\netlify\\functions"
 
 [build.environment]
 NODE_VERSION = "18"
